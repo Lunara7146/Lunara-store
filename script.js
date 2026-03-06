@@ -1,3 +1,4 @@
+// Define the product list
 const products = [
   { name: "Lunar Oversized Hoodie", priceUSD: 65, priceZAR: 1200, category: "Streetwear", image: "https://via.placeholder.com/300x400?text=Lunar+Oversized+Hoodie" },
   { name: "Cosmic Butterfly Tee", priceUSD: 40, priceZAR: 750, category: "Streetwear", image: "https://via.placeholder.com/300x400?text=Cosmic+Butterfly+Tee" },
@@ -7,8 +8,10 @@ const products = [
   { name: "Psychedelic Mushroom Tee", priceUSD: 50, priceZAR: 950, category: "Trippy", image: "https://via.placeholder.com/300x400?text=Psychedelic+Mushroom+Tee" }
 ];
 
+// Select the container
 const productsContainer = document.querySelector(".products");
 
+// Add each product dynamically
 products.forEach(product => {
   const div = document.createElement("div");
   div.className = "product";
