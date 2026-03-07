@@ -1,70 +1,98 @@
+let cartCount = 0;
+
+const sizes = ["XS","S","M","L","XL"];
 
 const products = [
-  { 
-    name: "Lunar Oversized Hoodie", 
-    priceUSD: 39.99, 
-    priceZAR: 759, 
-    category: "Hoodie", 
-    image: "https://github.com/Lunara7146/lunara-store/blob/main/lunar-hoodie.png?raw=true" 
-  },
-  { 
-    name: "Galaxy Flow Hoodie", 
-    priceUSD: 39.95, 
-    priceZAR: 758, 
-    category: "Hoodie", 
-    image: "https://github.com/Lunara7146/lunara-store/blob/main/galaxy-flow-hoodie.png?raw=true" 
-  },
-  { 
-    name: "Cosmic Butterfly Tee", 
-    priceUSD: 24.99, 
-    priceZAR: 474, 
-    category: "T-Shirt", 
-    image: "https://github.com/Lunara7146/lunara-store/blob/main/cosmic-butterfly-tee.png?raw=true" 
-  },
-  { 
-    name: "Psychedelic Mushroom Tee", 
-    priceUSD: 24.85, 
-    priceZAR: 475, 
-    category: "T-Shirt", 
-    image: "https://github.com/Lunara7146/lunara-store/blob/main/psychedelic-mushroom-tee.png?raw=true" 
-  },
-  { 
-    name: "Trippy Festival Pants", 
-    priceUSD: 29.95, 
-    priceZAR: 569, 
-    category: "Pants", 
-    image: "https://github.com/Lunara7146/lunara-store/blob/main/trippy-festival-pants.png?raw=true" 
-  },
-  { 
-    name: "Moon Phase Hippie Pants", 
-    priceUSD: 29.85, 
-    priceZAR: 571, 
-    category: "Pants", 
-    image: "https://github.com/Lunara7146/lunara-store/blob/main/moon-phase-hippie-pants.png?raw=true" 
-  }
+
+{
+name:"Lunar Oversized Hoodie",
+price:"$39.99",
+image:"lunar-hoodie.png",
+category:"hoodie"
+},
+
+{
+name:"Galaxy Flow Hoodie",
+price:"$39.95",
+image:"galaxy-flow-hoodie.png",
+category:"hoodie"
+},
+
+{
+name:"Cosmic Butterfly Tee",
+price:"$24.99",
+image:"cosmic-butterfly-tee.png",
+category:"shirt"
+},
+
+{
+name:"Psychedelic Mushroom Tee",
+price:"$24.85",
+image:"psychedelic-mushroom-tee.png",
+category:"shirt"
+},
+
+{
+name:"Trippy Festival Pants",
+price:"$29.95",
+image:"trippy-festival-pants.png",
+category:"pants"
+},
+
+{
+name:"Moon Phase Hippie Pants",
+price:"$29.85",
+image:"moon-phase-hippie-pants.png",
+category:"pants"
+}
+
 ];
 
 const productsContainer = document.querySelector(".products");
 
-products.forEach(product => {
-  const div = document.createElement("div");
-  div.className = "product";
-  div.style.position = "relative"; // needed for absolute logo positioning
+products.forEach((product,index)=>{
 
-  // Determine logo placement
-  let logoPositionStyle = "";
-  if(product.category === "Hoodie" || product.category === "T-Shirt"){
-    logoPositionStyle = "position:absolute; bottom:10px; right:10px; width:40px; height:40px;";
-  } else if(product.category === "Pants"){
-    logoPositionStyle = "position:absolute; top:10px; right:10px; width:40px; height:40px;";
-  }
+const div = document.createElement("div");
+div.className="product";
 
-  div.innerHTML = `
-    <img src="${product.image}" alt="${product.name}">
-    <img src="logo-small.png" alt="Logo" style="${logoPositionStyle}">
-    <h3>${product.name}</h3>
-    <p>$${product.priceUSD.toFixed(2)} | R${product.priceZAR}</p>
-    <button>Add to Cart</button>
-  `;
-  productsContainer.appendChild(div);
+let logoPosition="bottom:10px; right:10px;";
+
+if(product.category==="pants"){
+logoPosition="top:10px; right:10px;";
+}
+
+div.innerHTML=`
+
+<img src="${product.image}" alt="${product.name}">
+
+<img src="logo-small.png" style="position:absolute;width:40px;height:40px;${logoPosition}">
+
+<h3>${product.name}</h3>
+
+<p>${product.price}</p>
+
+<select id="size-${index}">
+${sizes.map(size=>`<option value="${size}">${size}</option>`).join("")}
+</select>
+
+<br><br>
+
+<button onclick="addToCart(${index})">Add To Cart</button>
+
+`;
+
+productsContainer.appendChild(div);
+
 });
+
+function addToCart(index){
+
+const size=document.getElementById(`size-${index}`).value;
+
+cartCount++;
+
+document.getElementById("cart-count").innerText=cartCount;
+
+alert("Added to cart: "+products[index].name+" Size: "+size);
+
+}
