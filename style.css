@@ -1,8 +1,8 @@
 /* =========================
    GENERAL STYLES
    ========================= */
-body{
-  font-family: 'Arial', Helvetica, sans-serif;
+body {
+  font-family: Arial, Helvetica, sans-serif;
   background: radial-gradient(circle at top left, #0a0a0a, #111);
   color: #fff;
   text-align: center;
@@ -13,27 +13,28 @@ body{
 /* =========================
    HEADER
    ========================= */
-header{
+header {
   padding: 25px;
-  background: linear-gradient(90deg,#111,#222);
+  background: linear-gradient(90deg, #111, #222);
   border-bottom: 1px solid #333;
   position: relative;
   z-index: 10;
 }
 
-.logo{
+.logo {
   width: 200px;
+  max-width: 80%;
   margin-bottom: 10px;
   filter: drop-shadow(0 0 10px #00c8ff);
 }
 
-.tagline{
+.tagline {
   color: #9be2ff;
   font-weight: bold;
   text-shadow: 0 0 8px #00c8ff, 0 0 12px #ff00ff;
 }
 
-.cart{
+.cart {
   margin-top: 10px;
   font-size: 20px;
   cursor: pointer;
@@ -44,39 +45,42 @@ header{
 /* =========================
    HERO SECTION
    ========================= */
-.hero{
-  height: 60vh;
+.hero {
+  min-height: 60vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   background: radial-gradient(circle at center, #0a0a0a, #111 70%);
   animation: subtleGlow 10s infinite alternate;
+  padding: 20px;
 }
 
-@keyframes subtleGlow{
-  0%{ background: radial-gradient(circle at center, #0a0a0a, #111 70%);}
-  50%{ background: radial-gradient(circle at center, #111, #0a0a0a 70%);}
-  100%{ background: radial-gradient(circle at center, #0a0a0a, #111 70%);}
+@keyframes subtleGlow {
+  0% { background: radial-gradient(circle at center, #0a0a0a, #111 70%); }
+  50% { background: radial-gradient(circle at center, #111, #0a0a0a 70%); }
+  100% { background: radial-gradient(circle at center, #0a0a0a, #111 70%); }
 }
 
-.hero h1{
+.hero h1 {
   font-size: 70px;
   letter-spacing: 6px;
+  margin-bottom: 10px;
   text-shadow: 0 0 20px #00c8ff, 0 0 35px #ff00ff, 0 0 50px #9be2ff;
 }
 
-.hero p{
+.hero p {
   max-width: 600px;
   color: #ccc;
   margin: 10px 0 20px;
   text-shadow: 0 0 8px #ff77ff;
+  padding: 0 12px;
 }
 
-.shop-btn{
+.shop-btn {
   padding: 12px 30px;
   font-size: 18px;
-  background: linear-gradient(45deg,#00c8ff,#ff00ff,#9be2ff);
+  background: linear-gradient(45deg, #00c8ff, #ff00ff, #9be2ff);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -85,7 +89,7 @@ header{
   box-shadow: 0 0 15px #00c8ff, 0 0 20px #ff00ff;
 }
 
-.shop-btn:hover{
+.shop-btn:hover {
   box-shadow: 0 0 25px #9be2ff, 0 0 35px #ff00ff;
   transform: scale(1.05);
 }
@@ -93,11 +97,11 @@ header{
 /* =========================
    FILTERS
    ========================= */
-.filters{
+.filters {
   padding: 20px;
 }
 
-.filters button{
+.filters button {
   margin: 5px;
   padding: 8px 16px;
   background: #222;
@@ -110,7 +114,7 @@ header{
   text-shadow: 0 0 6px #00c8ff;
 }
 
-.filters button:hover{
+.filters button:hover {
   background: #00c8ff;
   color: black;
   box-shadow: 0 0 15px #ff00ff;
@@ -119,16 +123,16 @@ header{
 /* =========================
    PRODUCTS GRID
    ========================= */
-.products{
+.products {
   display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 30px;
   padding: 40px;
   max-width: 1200px;
   margin: auto;
 }
 
-.product{
+.product {
   background: #111;
   padding: 20px;
   border-radius: 12px;
@@ -138,24 +142,36 @@ header{
   box-shadow: 0 0 15px #ff00ff, 0 0 25px #00c8ff inset;
 }
 
-.product:hover{
-  transform: scale(1.07);
+.product:hover {
+  transform: scale(1.04);
   border-color: #9be2ff;
   box-shadow: 0 0 30px #ff00ff, 0 0 40px #00c8ff inset;
 }
 
-.product img{
+.product img:first-child {
   width: 100%;
   border-radius: 10px;
   transition: 0.3s;
+  display: block;
 }
 
-.product img:hover{
-  transform: scale(1.05);
+.product img:first-child:hover {
+  transform: scale(1.03);
   filter: drop-shadow(0 0 10px #ff00ff);
 }
 
-.product p{
+.product-logo {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+}
+
+.product h3 {
+  margin-top: 16px;
+  margin-bottom: 10px;
+}
+
+.product p {
   color: #9be2ff;
   font-weight: bold;
   margin: 8px 0;
@@ -165,8 +181,8 @@ header{
 /* =========================
    BUTTONS
    ========================= */
-button{
-  background: linear-gradient(45deg,#00c8ff,#ff00ff);
+button {
+  background: linear-gradient(45deg, #00c8ff, #ff00ff);
   border: none;
   padding: 10px 20px;
   border-radius: 6px;
@@ -177,8 +193,8 @@ button{
   transition: 0.3s;
 }
 
-button:hover{
-  background: linear-gradient(45deg,#ff00ff,#9be2ff);
+button:hover {
+  background: linear-gradient(45deg, #ff00ff, #9be2ff);
   box-shadow: 0 0 20px #ff00ff, 0 0 25px #00c8ff;
   transform: scale(1.05);
 }
@@ -186,7 +202,7 @@ button:hover{
 /* =========================
    SELECTORS
    ========================= */
-select{
+select {
   padding: 8px;
   border-radius: 6px;
   border: none;
@@ -198,21 +214,22 @@ select{
 /* =========================
    SLIDING CART
    ========================= */
-#cart-panel{
+#cart-panel {
   position: fixed;
   top: 0;
   right: -400px;
   width: 320px;
+  max-width: 85%;
   height: 100%;
   background: #111;
   padding: 25px;
   transition: 0.4s;
   overflow-y: auto;
-  box-shadow: -5px 0 20px rgba(255,0,255,0.5);
+  box-shadow: -5px 0 20px rgba(255, 0, 255, 0.5);
   z-index: 1000;
 }
 
-.cart-item{
+.cart-item {
   border-bottom: 1px solid #333;
   padding: 10px 0;
   color: #9be2ff;
@@ -222,11 +239,11 @@ select{
 /* =========================
    SIZE GUIDE
    ========================= */
-.size-guide{
-  padding: 40px;
+.size-guide {
+  padding: 40px 20px;
 }
 
-.size-guide table{
+.size-guide table {
   width: 80%;
   margin: 20px auto;
   border-collapse: collapse;
@@ -235,12 +252,12 @@ select{
 }
 
 .size-guide th,
-.size-guide td{
+.size-guide td {
   border: 1px solid #444;
   padding: 12px;
 }
 
-.size-guide th{
+.size-guide th {
   background: #000;
   color: #9be2ff;
 }
@@ -248,7 +265,7 @@ select{
 /* =========================
    FOOTER
    ========================= */
-footer{
+footer {
   padding: 20px;
   background: black;
   margin-top: 40px;
@@ -259,27 +276,27 @@ footer{
 /* =========================
    MOBILE OPTIMIZATION
    ========================= */
-@media(max-width:768px){
-
-  .hero h1{
+@media (max-width: 768px) {
+  .hero h1 {
     font-size: 40px;
   }
 
-  .products{
+  .products {
     grid-template-columns: 1fr;
     padding: 20px;
   }
 
-  .logo{
+  .logo {
     width: 150px;
   }
 
-  .size-guide table{
+  .size-guide table {
     width: 100%;
+    font-size: 14px;
   }
 
-  .filters button{
+  .filters button {
     margin: 3px;
     padding: 6px 12px;
   }
-  }
+   }
