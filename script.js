@@ -122,4 +122,4 @@ document.getElementById("cart-panel").style.right="0"
 
 function closeCart(){
 document.getElementById("cart-panel").style.right="-400px"
-  }
+}
