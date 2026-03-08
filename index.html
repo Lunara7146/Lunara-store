@@ -1,84 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LUNARA</title>
-  <link rel="stylesheet" href="./style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUNARA</title>
+<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-  <header>
-    <img src="./images/logo-small.png" class="logo" alt="Lunara Logo">
-    <h2 class="tagline">Born to Shine, Dressed to Wander</h2>
+<header>
 
-    <div class="cart" onclick="openCart()">
-      🛒 Cart: <span id="cart-count">0</span>
-    </div>
-  </header>
+<img src="images/logo-small.png" class="logo" alt="Lunara Logo">
 
-  <section class="hero">
-    <h1>LUNARA</h1>
-    <p>Trippy streetwear inspired by the moon, mushrooms, and cosmic freedom.</p>
-    <a href="#shop">
-      <button class="shop-btn">Shop Collection</button>
-    </a>
-  </section>
+<h2 class="tagline">Born to Shine, Dressed to Wander</h2>
 
-  <section class="filters">
-    <button onclick="filterProducts('all')">All</button>
-    <button onclick="filterProducts('hoodie')">Hoodies</button>
-    <button onclick="filterProducts('shirt')">T-Shirts</button>
-    <button onclick="filterProducts('pants')">Pants</button>
-  </section>
+<div class="cart" onclick="openCart()">
+🛒 Cart: <span id="cart-count">0</span>
+</div>
 
-  <section id="shop" class="products"></section>
+</header>
 
-  <section class="size-guide">
-    <h2>Lunara Size Guide</h2>
+<section class="hero">
 
-    <h3>T-Shirts & Hoodies</h3>
-    <table>
-      <tr>
-        <th>Size</th>
-        <th>Chest</th>
-        <th>Length</th>
-        <th>Shoulder</th>
-      </tr>
-      <tr><td>XS</td><td>86-91cm</td><td>64</td><td>40</td></tr>
-      <tr><td>S</td><td>92-97cm</td><td>67</td><td>43</td></tr>
-      <tr><td>M</td><td>98-103cm</td><td>70</td><td>46</td></tr>
-      <tr><td>L</td><td>104-111cm</td><td>73</td><td>49</td></tr>
-      <tr><td>XL</td><td>112-118cm</td><td>76</td><td>52</td></tr>
-    </table>
+<h1>LUNARA</h1>
 
-    <h3>Hippie Pants</h3>
-    <table>
-      <tr>
-        <th>Size</th>
-        <th>Waist</th>
-        <th>Hip</th>
-        <th>Length</th>
-      </tr>
-      <tr><td>XS</td><td>66-71</td><td>86-91</td><td>98</td></tr>
-      <tr><td>S</td><td>72-77</td><td>92-97</td><td>100</td></tr>
-      <tr><td>M</td><td>78-83</td><td>98-103</td><td>102</td></tr>
-      <tr><td>L</td><td>84-91</td><td>104-109</td><td>104</td></tr>
-      <tr><td>XL</td><td>92-99</td><td>110-116</td><td>106</td></tr>
-    </table>
-  </section>
+<p>Trippy streetwear inspired by the moon, mushrooms, and cosmic freedom.</p>
 
-  <div id="cart-panel">
-    <h2>Your Cart</h2>
-    <div id="cart-items"></div>
-    <h3>Total: <span id="cart-total">$0.00</span></h3>
-    <button onclick="closeCart()">Close</button>
-  </div>
+<a href="#shop">
+<button class="shop-btn">Shop Collection</button>
+</a>
 
-  <footer>
-    <p>© 2026 LUNARA</p>
-  </footer>
+</section>
 
-  <script src="./script.js"></script>
+<section class="filters">
+
+<button onclick="filterProducts('all')">All</button>
+<button onclick="filterProducts('hoodie')">Hoodies</button>
+<button onclick="filterProducts('shirt')">T-Shirts</button>
+<button onclick="filterProducts('pants')">Pants</button>
+
+</section>
+
+<section id="shop" class="products"></section>
+
+<section class="size-guide">
+
+<h2>Lunara Size Guide</h2>
+
+<h3>T-Shirts & Hoodies</h3>
+
+<table>
+<tr>
+<th>Size</th>
+<th>Chest</th>
+<th>Length</th>
+<th>Shoulder</th>
+</tr>
+
+<tr><td>XS</td><td>86-91cm</td><td>64</td><td>40</td></tr>
+<tr><td>S</td><td>92-97cm</td><td>67</td><td>43</td></tr>
+<tr><td>M</td><td>98-103cm</td><td>70</td><td>46</td></tr>
+<tr><td>L</td><td>104-111cm</td><td>73</td><td>49</td></tr>
+<tr><td>XL</td><td>112-118cm</td><td>76</td><td>52</td></tr>
+
+</table>
+
+<h3>Hippie Pants</h3>
+
+<table>
+
+<tr>
+<th>Size</th>
+<th>Waist</th>
+<th>Hip</th>
+<th>Length</th>
+</tr>
+
+<tr><td>XS</td><td>66-71</td><td>86-91</td><td>98</td></tr>
+<tr><td>S</td><td>72-77</td><td>92-97</td><td>100</td></tr>
+<tr><td>M</td><td>78-83</td><td>98-103</td><td>102</td></tr>
+<tr><td>L</td><td>84-91</td><td>104-109</td><td>104</td></tr>
+<tr><td>XL</td><td>92-99</td><td>110-116</td><td>106</td></tr>
+
+</table>
+
+</section>
+
+<div id="cart-panel">
+
+<h2>Your Cart</h2>
+
+<div id="cart-items"></div>
+
+<h3>Total: <span id="cart-total">$0</span></h3>
+
+<button onclick="closeCart()">Close</button>
+
+</div>
+
+<footer>
+
+<p>© 2026 LUNARA</p>
+
+</footer>
+
+<script src="script.js"></script>
+
 </body>
 </html>
