@@ -1,68 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LUNARA</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUNARA</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
+  <div class="announcement-bar">
+    Free shipping on orders over $75 ✦ New cosmic drop live now
+  </div>
 
-<header>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="images/logo-small.png" class="logo" alt="Lunara Logo" />
+        <div class="brand-text">
+          <h1>LUNARA</h1>
+          <p>Born to Shine, Dressed to Wander</p>
+        </div>
+      </div>
 
-<img src="images/lunara-logo.png" class="logo">
+      <nav class="main-nav">
+        <a href="#shop">Shop</a>
+        <a href="#size-guide">Size Guide</a>
+        <a href="#footer">About</a>
+      </nav>
 
-<h2 class="tagline">Born to Shine, Dressed to Wander</h2>
+      <button class="cart-btn" onclick="openCart()">
+        Cart (<span id="cart-count">0</span>)
+      </button>
+    </div>
+  </header>
 
-<div class="cart" onclick="openCart()">
-🛒 Cart: <span id="cart-count">0</span>
-</div>
+  <section class="hero">
+    <div class="hero-content">
+      <span class="eyebrow">NEW COLLECTION</span>
+      <h2>Streetwear with a cosmic soul.</h2>
+      <p>
+        Discover oversized hoodies, expressive tees, and festival-ready pants
+        inspired by moonlight, freedom, and psychedelic energy.
+      </p>
+      <div class="hero-actions">
+        <a href="#shop" class="primary-btn">Shop Now</a>
+        <a href="#size-guide" class="secondary-btn">View Size Guide</a>
+      </div>
+    </div>
+  </section>
 
-</header>
+  <section class="section-heading">
+    <p class="section-label">LUNARA DROP</p>
+    <h3>Shop the collection</h3>
+    <p class="section-copy">
+      Premium statement pieces designed to stand out day or night.
+    </p>
+  </section>
 
-<section class="hero">
+  <section class="filters">
+    <button onclick="filterProducts('all')">All</button>
+    <button onclick="filterProducts('hoodie')">Hoodies</button>
+    <button onclick="filterProducts('shirt')">T-Shirts</button>
+    <button onclick="filterProducts('pants')">Pants</button>
+  </section>
 
-<h1>LUNARA</h1>
+  <section id="shop" class="products"></section>
 
-<p>Trippy streetwear inspired by the moon, mushrooms, and cosmic freedom.</p>
+  <section class="info-strip">
+    <div class="info-card">
+      <h4>Fast Checkout</h4>
+      <p>Simple shopping experience with easy cart access.</p>
+    </div>
+    <div class="info-card">
+      <h4>Statement Style</h4>
+      <p>Unique streetwear inspired by moon phases and cosmic freedom.</p>
+    </div>
+    <div class="info-card">
+      <h4>Comfort Fit</h4>
+      <p>Relaxed silhouettes designed for movement and expression.</p>
+    </div>
+  </section>
 
-<a href="#shop">
-<button class="shop-btn">Shop Collection</button>
-</a>
+  <section id="size-guide" class="size-guide">
+    <div class="section-heading">
+      <p class="section-label">FIT HELP</p>
+      <h3>Lunara Size Guide</h3>
+    </div>
 
-</section>
+    <div class="table-wrap">
+      <h4>T-Shirts & Hoodies</h4>
+      <table>
+        <tr>
+          <th>Size</th>
+          <th>Chest</th>
+          <th>Length</th>
+          <th>Shoulder</th>
+        </tr>
+        <tr><td>XS</td><td>86-91cm</td><td>64</td><td>40</td></tr>
+        <tr><td>S</td><td>92-97cm</td><td>67</td><td>43</td></tr>
+        <tr><td>M</td><td>98-103cm</td><td>70</td><td>46</td></tr>
+        <tr><td>L</td><td>104-111cm</td><td>73</td><td>49</td></tr>
+        <tr><td>XL</td><td>112-118cm</td><td>76</td><td>52</td></tr>
+      </table>
+    </div>
 
-<section class="filters">
+    <div class="table-wrap">
+      <h4>Pants</h4>
+      <table>
+        <tr>
+          <th>Size</th>
+          <th>Waist</th>
+          <th>Hip</th>
+          <th>Length</th>
+        </tr>
+        <tr><td>XS</td><td>66-71</td><td>86-91</td><td>98</td></tr>
+        <tr><td>S</td><td>72-77</td><td>92-97</td><td>100</td></tr>
+        <tr><td>M</td><td>78-83</td><td>98-103</td><td>102</td></tr>
+        <tr><td>L</td><td>84-91</td><td>104-109</td><td>104</td></tr>
+        <tr><td>XL</td><td>92-99</td><td>110-116</td><td>106</td></tr>
+      </table>
+    </div>
+  </section>
 
-<button onclick="filterProducts('all')">All</button>
-<button onclick="filterProducts('hoodie')">Hoodies</button>
-<button onclick="filterProducts('shirt')">T-Shirts</button>
-<button onclick="filterProducts('pants')">Pants</button>
+  <div id="overlay" class="overlay" onclick="closeCart()"></div>
 
-</section>
+  <aside id="cart-panel" class="cart-panel">
+    <div class="cart-header">
+      <h3>Your Cart</h3>
+      <button class="close-cart" onclick="closeCart()">✕</button>
+    </div>
 
-<section id="shop" class="products"></section>
+    <div id="cart-items" class="cart-items"></div>
 
-<div id="cart-panel">
+    <div class="cart-footer">
+      <h4>Total: <span id="cart-total">$0.00</span></h4>
+      <button class="checkout-btn">Checkout</button>
+    </div>
+  </aside>
 
-<h2>Your Cart</h2>
+  <footer id="footer" class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <h4>LUNARA</h4>
+        <p>Cosmic streetwear for dreamers, wanderers, and night souls.</p>
+      </div>
+      <div>
+        <h4>Shop</h4>
+        <p>Hoodies</p>
+        <p>T-Shirts</p>
+        <p>Pants</p>
+      </div>
+      <div>
+        <h4>Help</h4>
+        <p>Size Guide</p>
+        <p>Shipping</p>
+        <p>Returns</p>
+      </div>
+    </div>
+    <p class="copyright">© 2026 LUNARA. All rights reserved.</p>
+  </footer>
 
-<div id="cart-items"></div>
-
-<h3>Total: <span id="cart-total">$0</span></h3>
-
-<button onclick="closeCart()">Close</button>
-
-</div>
-
-<footer>
-
-<p>© 2026 LUNARA</p>
-
-</footer>
-
-<script src="script.js"></script>
-
+  <script src="script.js"></script>
 </body>
 </html>
