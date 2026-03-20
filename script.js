@@ -1,125 +1,266 @@
 let cart = [];
 
-const sizes = ["XS","S","M","L","XL"];
-const colors = ["Black","White","Purple","Blue"];
+const sizes = ["XS", "S", "M", "L", "XL"];
+const colors = ["black", "white"];
 
 const products = [
+  {
+    name: "Moon Phase Hoodie",
+    price: 39.99,
+    category: "hoodie",
+    images: {
+      black: "images/hoodies/lunar-hoodie-black.png",
+      white: "images/hoodies/lunar-hoodie-white.png"
+    }
+  },
+  {
+    name: "Galaxy Crescent Hoodie",
+    price: 39.99,
+    category: "hoodie",
+    images: {
+      black: "images/hoodies/galaxy-hoodie-black.png",
+      white: "images/hoodies/galaxy-hoodie-white.png"
+    }
+  },
+  {
+    name: "Butterfly Hoodie",
+    price: 39.99,
+    category: "hoodie",
+    images: {
+      black: "images/hoodies/butterfly-hoodie-black.png",
+      white: "images/hoodies/butterfly-hoodie-white.png"
+    }
+  },
+  {
+    name: "Cosmic Eye Hoodie",
+    price: 39.99,
+    category: "hoodie",
+    images: {
+      black: "images/hoodies/cosmic-eye-hoodie-black.png",
+      white: "images/hoodies/cosmic-eye-hoodie-white.png"
+    }
+  },
 
-{name:"Lunar Oversized Hoodie",price:39.99,image:"images/lunar-hoodie.png",category:"hoodie"},
-{name:"Galaxy Flow Hoodie",price:39.95,image:"images/galaxy-flow-hoodie.png",category:"hoodie"},
-{name:"Cosmic Butterfly Tee",price:24.99,image:"images/cosmic-butterfly-tee.png",category:"shirt"},
-{name:"Psychedelic Mushroom Tee",price:24.85,image:"images/psychedelic-mushroom-tee.png",category:"shirt"},
-{name:"Trippy Festival Pants",price:29.95,image:"images/trippy-festival-pants.png",category:"pants"},
-{name:"Moon Phase Hippie Pants",price:29.85,image:"images/moon-phase-hippie-pants.png",category:"pants"}
+  {
+    name: "Butterfly Tee",
+    price: 24.99,
+    category: "shirt",
+    images: {
+      black: "images/shirts/butterfly-tee-black.png",
+      white: "images/shirts/butterfly-tee-white.png"
+    }
+  },
+  {
+    name: "Mushroom Tee",
+    price: 24.99,
+    category: "shirt",
+    images: {
+      black: "images/shirts/mushroom-tee-black.png",
+      white: "images/shirts/mushroom-tee-white.png"
+    }
+  },
+  {
+    name: "Cosmic Splash Tee",
+    price: 24.99,
+    category: "shirt",
+    images: {
+      black: "images/shirts/cosmic-tee-black.png",
+      white: "images/shirts/cosmic-tee-white.png"
+    }
+  },
+  {
+    name: "Cosmic Eye Tee",
+    price: 24.99,
+    category: "shirt",
+    images: {
+      black: "images/shirts/eye-tee-black.png",
+      white: "images/shirts/eye-tee-white.png"
+    }
+  },
 
-]
+  {
+    name: "Moon Phase Pants",
+    price: 29.99,
+    category: "pants",
+    images: {
+      black: "images/pants/moon-pants-black.png",
+      white: "images/pants/moon-pants-white.png"
+    }
+  },
+  {
+    name: "Mushroom Galaxy Pants",
+    price: 29.99,
+    category: "pants",
+    images: {
+      black: "images/pants/mushroom-pants-black.png",
+      white: "images/pants/mushroom-pants-white.png"
+    }
+  },
+  {
+    name: "Cosmic Moon Pants",
+    price: 29.99,
+    category: "pants",
+    images: {
+      black: "images/pants/cosmic-pants-black.png",
+      white: "images/pants/cosmic-pants-white.png"
+    }
+  },
+  {
+    name: "Butterfly Galaxy Pants",
+    price: 29.99,
+    category: "pants",
+    images: {
+      black: "images/pants/butterfly-pants-black.png",
+      white: "images/pants/butterfly-pants-white.png"
+    }
+  }
+];
 
-const container=document.querySelector(".products")
+const container = document.querySelector(".products");
+let activeCategory = "all";
 
-function displayProducts(list){
-
-container.innerHTML=""
-
-list.forEach((product,index)=>{
-
-let logoPosition="bottom:10px; right:10px;"
-if(product.category==="pants"){logoPosition="top:10px; right:10px;"}
-
-const div=document.createElement("div")
-div.className="product"
-
-div.innerHTML=`
-
-<img src="${product.image}" loading="lazy">
-
-<img src="images/logo-small.png" style="position:absolute;width:40px;height:40px;${logoPosition}">
-
-<h3>${product.name}</h3>
-
-<p>$${product.price}</p>
-
-<select id="size-${index}">
-${sizes.map(size=>`<option>${size}</option>`).join("")}
-</select>
-
-<select id="color-${index}">
-${colors.map(color=>`<option>${color}</option>`).join("")}
-</select>
-
-<br><br>
-
-<button onclick="addToCart(${index})">Add To Cart</button>
-
-`
-
-container.appendChild(div)
-
-})
-
+function formatColorName(color) {
+  return color.charAt(0).toUpperCase() + color.slice(1);
 }
 
-displayProducts(products)
+function displayProducts(list) {
+  container.innerHTML = "";
 
-function filterProducts(category){
+  list.forEach((product, index) => {
+    const defaultColor = "black";
 
-if(category==="all"){
-displayProducts(products)
-return
+    const div = document.createElement("div");
+    div.className = "product-card";
+
+    div.innerHTML = `
+      <div class="product-image-wrap">
+        <img
+          id="img-${index}"
+          src="${product.images[defaultColor]}"
+          alt="${product.name}"
+          class="product-image"
+        >
+      </div>
+
+      <div class="product-info">
+        <p class="product-type">${product.category}</p>
+        <h4>${product.name}</h4>
+        <p class="product-price">$${product.price.toFixed(2)}</p>
+
+        <div class="product-options">
+          <select id="size-${index}">
+            ${sizes.map(size => `<option value="${size}">${size}</option>`).join("")}
+          </select>
+
+          <select id="color-${index}" onchange="changeColor(${index})">
+            ${colors.map(color => `
+              <option value="${color}" ${color === defaultColor ? "selected" : ""}>
+                ${formatColorName(color)}
+              </option>
+            `).join("")}
+          </select>
+        </div>
+
+        <button onclick="addToCart(${index})">Add to Cart</button>
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
 }
 
-const filtered=products.filter(p=>p.category===category)
+function filterProducts(category) {
+  activeCategory = category;
 
-displayProducts(filtered)
+  if (category === "all") {
+    displayProducts(products);
+    return;
+  }
 
+  const filtered = products.filter(product => product.category === category);
+  displayProducts(filtered);
 }
 
-function addToCart(index){
-
-const size=document.getElementById(`size-${index}`).value
-const color=document.getElementById(`color-${index}`).value
-
-cart.push({
-name:products[index].name,
-price:products[index].price,
-size:size,
-color:color
-})
-
-updateCart()
-openCart()
-
+function getDisplayedProducts() {
+  if (activeCategory === "all") return products;
+  return products.filter(product => product.category === activeCategory);
 }
 
-function updateCart(){
+function changeColor(index) {
+  const displayedProducts = getDisplayedProducts();
+  const product = displayedProducts[index];
+  const selectedColor = document.getElementById(`color-${index}`).value;
+  const image = document.getElementById(`img-${index}`);
 
-const items=document.getElementById("cart-items")
-items.innerHTML=""
-
-let total=0
-
-cart.forEach(item=>{
-
-items.innerHTML+=`
-<div class="cart-item">
-${item.name}<br>
-Size: ${item.size} | Color: ${item.color}<br>
-$${item.price}
-</div>
-`
-
-total+=item.price
-
-})
-
-document.getElementById("cart-count").innerText=cart.length
-document.getElementById("cart-total").innerText="$"+total.toFixed(2)
-
+  if (product && image) {
+    image.src = product.images[selectedColor];
+  }
 }
 
-function openCart(){
-document.getElementById("cart-panel").style.right="0"
+function addToCart(index) {
+  const displayedProducts = getDisplayedProducts();
+  const product = displayedProducts[index];
+  if (!product) return;
+
+  const size = document.getElementById(`size-${index}`).value;
+  const color = document.getElementById(`color-${index}`).value;
+
+  cart.push({
+    name: product.name,
+    price: product.price,
+    size: size,
+    color: formatColorName(color)
+  });
+
+  updateCart();
+  openCart();
 }
 
-function closeCart(){
-document.getElementById("cart-panel").style.right="-400px"
+function updateCart() {
+  const items = document.getElementById("cart-items");
+  items.innerHTML = "";
+
+  let total = 0;
+
+  if (cart.length === 0) {
+    items.innerHTML = `<p class="empty-cart">Your cart is empty.</p>`;
+  } else {
+    cart.forEach(item => {
+      items.innerHTML += `
+        <div class="cart-item">
+          <div>
+            <h5>${item.name}</h5>
+            <p>Size: ${item.size}</p>
+            <p>Color: ${item.color}</p>
+          </div>
+          <strong>$${item.price.toFixed(2)}</strong>
+        </div>
+      `;
+      total += item.price;
+    });
+  }
+
+  document.getElementById("cart-count").innerText = cart.length;
+  document.getElementById("cart-total").innerText = "$" + total.toFixed(2);
 }
+
+function openCart() {
+  document.getElementById("cart-panel").classList.add("open");
+  document.getElementById("overlay").classList.add("show");
+}
+
+function closeCart() {
+  document.getElementById("cart-panel").classList.remove("open");
+  document.getElementById("overlay").classList.remove("show");
+}
+
+document.querySelectorAll(".filters button").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".filters button").forEach(btn => btn.classList.remove("active"));
+    button.classList.add("active");
+  });
+});
+
+displayProducts(products);
+document.querySelector(".filters button").classList.add("active");
+updateCart();
