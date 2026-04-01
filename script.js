@@ -416,22 +416,31 @@ function normalizePrintifyProduct(apiProduct) {
   const localSlug = findLocalMatch(title, category);
   const localProduct = localSlug ? getLocalCatalogBySlug(localSlug) : null;
 
-  const firstAvailableVariant = (apiProduct.variants || []).find(variant => variant.is_available)
-    || (apiProduct.variants || []).find(variant => variant.is_enabled)
-    || apiProduct.variants?.[0]
-    || null;
+  const firstAvailableVariant =
+    (apiProduct.variants || []).find(variant => variant.is_available) ||
+    (apiProduct.variants || []).find(variant => variant.is_enabled) ||
+    apiProduct.variants?.[0] ||
+    null;
 
   const price = firstAvailableVariant
     ? Number(formatPriceFromCents(firstAvailableVariant.price))
     : 29.99;
 
   const sizes =
-    apiProduct.options?.find(option => option.name?.toLowerCase() === "sizes")?.values?.map(value => value.title)
-    || fallbackSizes;
+    apiProduct.options?.find(option => {
+      const optionName = option.name?.toLowerCase();
+      return optionName === "size" || optionName === "sizes";
+    })?.values?.map(value => value.title) || fallbackSizes;
 
-  const images = localProduct?.images || {
-    black: "images/logo-small.png"
-  };
+  const printifyImage =
+    apiProduct.images?.find(image => image.is_default)?.src ||
+    apiProduct.images?.[0]?.src ||
+    apiProduct.image ||
+    "";
+
+  const images = printifyImage
+    ? { black: printifyImage }
+    : localProduct?.images || { black: "images/logo-small.png" };
 
   return {
     id: apiProduct.id,
@@ -486,3 +495,4 @@ document.querySelectorAll(".filters button").forEach(button => {
 });
 
 loadProducts();
+    
