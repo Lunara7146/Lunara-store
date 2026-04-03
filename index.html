@@ -131,33 +131,77 @@
 
     <div id="cart-items" class="cart-items"></div>
 
-    <!-- ✅ UPDATED CHECKOUT -->
     <div class="cart-footer">
-  <h4>Total: <span id="cart-total">R0.00</span></h4>
+      <h4>Total: <span id="cart-total">R0.00</span></h4>
 
-  <form id="payfast-form" action="https://sandbox.payfast.co.za/eng/process" method="post">
+      <div class="checkout-fields">
+        <input type="text" id="customer-first-name" placeholder="First name" />
+        <input type="text" id="customer-last-name" placeholder="Last name" />
+        <input type="email" id="customer-email" placeholder="Email address" />
+        <input type="tel" id="customer-phone" placeholder="Phone number" />
+        <input type="text" id="customer-address1" placeholder="Street address" />
+        <input type="text" id="customer-city" placeholder="City" />
+        <input type="text" id="customer-region" placeholder="Province / Region" />
+        <input type="text" id="customer-zip" placeholder="Postal code" />
+        <input type="text" id="customer-country" placeholder="Country code (e.g. ZA)" value="ZA" />
+      </div>
 
-    <!-- YOUR REAL DETAILS -->
-    <input type="hidden" name="merchant_id" value="34398985">
-    <input type="hidden" name="merchant_key" value="r12bp3covvq41">
+      <form id="payfast-form" action="https://sandbox.payfast.co.za/eng/process" method="post">
+        <input type="hidden" name="merchant_id" value="34398985" />
+        <input type="hidden" name="merchant_key" value="r12bp3covvq41" />
 
-    <!-- YOUR VERCEL SITE -->
-    <input type="hidden" name="return_url" value="https://lunara-store.vercel.app/success.html">
-    <input type="hidden" name="cancel_url" value="https://lunara-store.vercel.app/cancel.html">
-    <input type="hidden" name="notify_url" value="https://lunara-store.vercel.app/notify">
+        <input type="hidden" name="return_url" value="https://lunara-store.vercel.app/success.html" />
+        <input type="hidden" name="cancel_url" value="https://lunara-store.vercel.app/cancel.html" />
+        <input type="hidden" name="notify_url" value="https://lunara-store.vercel.app/api/payfast-notify" />
 
-    <!-- CUSTOMER -->
-    <input type="hidden" name="name_first" value="Lunara Customer">
-    <input type="hidden" name="email_address" value="customer@email.com">
+        <input type="hidden" name="name_first" id="pf-name-first" />
+        <input type="hidden" name="name_last" id="pf-name-last" />
+        <input type="hidden" name="email_address" id="pf-email-address" />
 
-    <!-- DYNAMIC -->
-    <input type="hidden" name="m_payment_id" id="pf-payment-id">
-    <input type="hidden" name="amount" id="pf-amount">
-    <input type="hidden" name="item_name" id="pf-item-name">
+        <input type="hidden" name="m_payment_id" id="pf-payment-id" />
+        <input type="hidden" name="amount" id="pf-amount" />
+        <input type="hidden" name="item_name" id="pf-item-name" />
 
-    <button class="checkout-btn" type="submit" onclick="return preparePayFastCheckout()">
-      Secure Checkout
-    </button>
+        <input type="hidden" name="custom_str1" id="pf-product-id" />
+        <input type="hidden" name="custom_str2" id="pf-variant-id" />
+        <input type="hidden" name="custom_int1" id="pf-quantity" />
 
-  </form>
-</div>
+        <input type="hidden" name="custom_str3" id="pf-address1" />
+        <input type="hidden" name="custom_str4" id="pf-city" />
+        <input type="hidden" name="custom_str5" id="pf-region" />
+        <input type="hidden" name="custom_str6" id="pf-zip" />
+        <input type="hidden" name="custom_str7" id="pf-country" />
+        <input type="hidden" name="custom_str8" id="pf-phone" />
+
+        <button class="checkout-btn" type="submit" onclick="return preparePayFastCheckout()">
+          Secure Checkout
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <footer id="footer" class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <h4>LUNARA</h4>
+        <p>Cosmic streetwear for dreamers, wanderers, and night souls.</p>
+      </div>
+      <div>
+        <h4>Shop</h4>
+        <p>Hoodies</p>
+        <p>T-Shirts</p>
+        <p>Pants</p>
+      </div>
+      <div>
+        <h4>Help</h4>
+        <p>Size Guide</p>
+        <p>Shipping</p>
+        <p>Returns</p>
+      </div>
+    </div>
+    <p class="copyright">© 2026 LUNARA. All rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+          </html>
