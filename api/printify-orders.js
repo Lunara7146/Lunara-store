@@ -7,15 +7,18 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const token = process.env.PRINTIFY_API_TOKEN;
-  const shopId = process.env.PRINTIFY_SHOP_ID;
-  const userAgent = process.env.PRINTIFY_USER_AGENT || "LunaraStore/1.0";
-
-  if (!token || !shopId) {
-    return res.status(500).json({ error: "Missing Printify environment variables" });
-  }
-
   try {
+    const token = process.env.PRINTIFY_API_TOKEN;
+    const shopId = process.env.PRINTIFY_SHOP_ID;
+    const userAgent = process.env.PRINTIFY_USER_AGENT || "LunaraStore/1.0";
+
+    if (!token || !shopId) {
+      return res.status(500).json({
+        error: "Missing Printify environment variables",
+        required: ["PRINTIFY_API_TOKEN", "PRINTIFY_SHOP_ID"]
+      });
+    }
+
     const {
       external_id,
       line_items,
@@ -33,7 +36,7 @@ export default async function handler(req, res) {
 
     const payload = {
       external_id: clean(external_id),
-      line_items: line_items.map(item => ({
+      line_items: line_items.map((item) => ({
         product_id: clean(item.product_id),
         variant_id: Number(item.variant_id),
         quantity: Number(item.quantity || 1)
@@ -53,15 +56,18 @@ export default async function handler(req, res) {
       send_shipping_notification: Boolean(send_shipping_notification)
     };
 
-    const response = await fetch(`https://api.printify.com/v1/shops/${shopId}/orders.json`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "User-Agent": userAgent,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
+    const response = await fetch(
+      `https://api.printify.com/v1/shops/${shopId}/orders.json`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "User-Agent": userAgent,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
 
     const data = await response.json();
 
@@ -75,7 +81,7 @@ export default async function handler(req, res) {
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({
-      error: "Unexpected server error",
+      error: "Server error",
       details: error.message
     });
   }
