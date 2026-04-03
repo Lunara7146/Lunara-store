@@ -171,19 +171,11 @@ function formatCurrency(amount) {
 function guessCategory(text) {
   const value = text.toLowerCase();
 
-  if (
-    value.includes("hoodie") ||
-    value.includes("sweatshirt") ||
-    value.includes("crewneck")
-  ) {
+  if (value.includes("hoodie") || value.includes("sweatshirt") || value.includes("crewneck")) {
     return "hoodie";
   }
 
-  if (
-    value.includes("pants") ||
-    value.includes("jogger") ||
-    value.includes("trouser")
-  ) {
+  if (value.includes("pants") || value.includes("jogger") || value.includes("trouser")) {
     return "pants";
   }
 
@@ -254,18 +246,13 @@ function displayProducts(list) {
   productsContainer.innerHTML = "";
 
   if (!list.length) {
-    productsContainer.innerHTML = `
-      <p class="empty-cart">No products found in this category yet.</p>
-    `;
+    productsContainer.innerHTML = `<p class="empty-cart">No products found in this category yet.</p>`;
     return;
   }
 
   list.forEach((product, index) => {
     const availableColors = getAvailableColors(product.images);
-    const defaultColor = availableColors.includes("black")
-      ? "black"
-      : availableColors[0];
-
+    const defaultColor = availableColors.includes("black") ? "black" : availableColors[0];
     const availableSizes = getAvailableSizes(product);
     const safeDescription = shortenText(product.description || "", 120);
     const imageSrc = product.images?.[defaultColor] || getDefaultImage(product.images);
@@ -291,9 +278,7 @@ function displayProducts(list) {
 
         <div class="product-options">
           <select id="size-${index}">
-            ${availableSizes.map(size => `
-              <option value="${size}">${size}</option>
-            `).join("")}
+            ${availableSizes.map(size => `<option value="${size}">${size}</option>`).join("")}
           </select>
 
           <select id="color-${index}" onchange="changeColor(${index})">
@@ -345,11 +330,14 @@ function addToCart(index) {
   const color = document.getElementById(`color-${index}`)?.value || "black";
 
   cart.push({
+    id: product.id,
     name: product.name,
     price: Number(product.price),
     size,
     color: formatColorName(color),
-    quantity: 1
+    quantity: 1,
+    printifyProductId: product.printifyProductId || product.id || "",
+    printifyVariantId: product.printifyVariantId || ""
   });
 
   updateCart();
@@ -365,7 +353,7 @@ function updateCart() {
   if (cart.length === 0) {
     items.innerHTML = `<p class="empty-cart">Your cart is empty.</p>`;
   } else {
-    cart.forEach(item => {
+    cart.forEach((item, itemIndex) => {
       const quantity = Number(item.quantity || 1);
       const lineTotal = Number(item.price) * quantity;
 
@@ -378,7 +366,11 @@ function updateCart() {
           <p>Color: ${item.color}</p>
           <p>Qty: ${quantity}</p>
         </div>
-        <strong>${formatCurrency(lineTotal)}</strong>
+        <div>
+          <strong>${formatCurrency(lineTotal)}</strong>
+          <br>
+          <button type="button" onclick="removeFromCart(${itemIndex})">Remove</button>
+        </div>
       `;
       items.appendChild(cartRow);
 
@@ -388,6 +380,11 @@ function updateCart() {
 
   document.getElementById("cart-count").innerText = cart.length;
   document.getElementById("cart-total").innerText = formatCurrency(total);
+}
+
+function removeFromCart(index) {
+  cart.splice(index, 1);
+  updateCart();
 }
 
 function openCart() {
@@ -400,9 +397,28 @@ function closeCart() {
   document.getElementById("overlay").classList.remove("show");
 }
 
+function getFieldValue(id) {
+  return document.getElementById(id)?.value?.trim() || "";
+}
+
 function preparePayFastCheckout() {
   if (!cart || cart.length === 0) {
     alert("Your cart is empty.");
+    return false;
+  }
+
+  const firstName = getFieldValue("customer-first-name");
+  const lastName = getFieldValue("customer-last-name");
+  const email = getFieldValue("customer-email");
+  const phone = getFieldValue("customer-phone");
+  const address1 = getFieldValue("customer-address1");
+  const city = getFieldValue("customer-city");
+  const region = getFieldValue("customer-region");
+  const zip = getFieldValue("customer-zip");
+  const country = getFieldValue("customer-country") || "ZA";
+
+  if (!firstName || !lastName || !email || !phone || !address1 || !city || !region || !zip || !country) {
+    alert("Please fill in all checkout details before continuing.");
     return false;
   }
 
@@ -414,26 +430,32 @@ function preparePayFastCheckout() {
     .map(item => `${item.name} (${item.size}, ${item.color}) x${item.quantity || 1}`)
     .join(", ");
 
+  const primaryItem = cart[0];
   const orderId = "LUNARA-" + Date.now();
 
-  const paymentIdField = document.getElementById("pf-payment-id");
-  const amountField = document.getElementById("pf-amount");
-  const itemNameField = document.getElementById("pf-item-name");
+  document.getElementById("pf-name-first").value = firstName;
+  document.getElementById("pf-name-last").value = lastName;
+  document.getElementById("pf-email-address").value = email;
+  document.getElementById("pf-payment-id").value = orderId;
+  document.getElementById("pf-amount").value = total.toFixed(2);
+  document.getElementById("pf-item-name").value = itemNames;
 
-  if (!paymentIdField || !amountField || !itemNameField) {
-    alert("Checkout form is missing required PayFast fields.");
-    return false;
+  document.getElementById("pf-product-id").value = primaryItem.printifyProductId || "";
+  document.getElementById("pf-variant-id").value = primaryItem.printifyVariantId || "";
+  document.getElementById("pf-quantity").value = primaryItem.quantity || 1;
+
+  document.getElementById("pf-address1").value = address1;
+  document.getElementById("pf-city").value = city;
+  document.getElementById("pf-region").value = region;
+  document.getElementById("pf-zip").value = zip;
+  document.getElementById("pf-country").value = country.toUpperCase();
+  document.getElementById("pf-phone").value = phone;
+
+  if (!primaryItem.printifyProductId || !primaryItem.printifyVariantId) {
+    alert("This product is not fully mapped to Printify yet. Payment can continue, but automatic fulfilment will need the correct product and variant IDs.");
   }
 
-  paymentIdField.value = orderId;
-  amountField.value = total.toFixed(2);
-  itemNameField.value = itemNames;
-
   return true;
-}
-
-function showCheckoutMessage() {
-  alert("Checkout is now connected through PayFast.");
 }
 
 function setActiveFilterButton() {
@@ -450,6 +472,21 @@ function setActiveFilterButton() {
       button.classList.add("active");
     }
   });
+}
+
+function getVariantIdFromProduct(apiProduct, size) {
+  const variants = apiProduct.variants || [];
+  if (!variants.length) return "";
+
+  const normalizedSize = String(size || "").toLowerCase();
+
+  const matchingVariant = variants.find(variant => {
+    const title = String(variant.title || "").toLowerCase();
+    const name = String(variant.name || "").toLowerCase();
+    return title.includes(normalizedSize) || name.includes(normalizedSize);
+  });
+
+  return matchingVariant?.id || variants[0]?.id || "";
 }
 
 function normalizePrintifyProduct(apiProduct) {
@@ -491,7 +528,9 @@ function normalizePrintifyProduct(apiProduct) {
     category: localProduct?.category || category,
     price,
     sizes,
-    images
+    images,
+    printifyProductId: apiProduct.id,
+    printifyVariantId: firstAvailableVariant?.id || ""
   };
 }
 
@@ -521,7 +560,9 @@ async function loadProducts() {
       category: product.category,
       price: product.category === "hoodie" ? 39.99 : product.category === "pants" ? 29.99 : 24.99,
       sizes: fallbackSizes,
-      images: product.images
+      images: product.images,
+      printifyProductId: "",
+      printifyVariantId: ""
     }));
   }
 
