@@ -164,6 +164,10 @@ function formatPriceFromCents(cents) {
   return (Number(cents || 0) / 100).toFixed(2);
 }
 
+function formatCurrency(amount) {
+  return "R" + Number(amount || 0).toFixed(2);
+}
+
 function guessCategory(text) {
   const value = text.toLowerCase();
 
@@ -282,7 +286,7 @@ function displayProducts(list) {
       <div class="product-info">
         <p class="product-type">${product.category}</p>
         <h4>${product.name}</h4>
-        <p class="product-price">$${Number(product.price).toFixed(2)}</p>
+        <p class="product-price">${formatCurrency(product.price)}</p>
         <p class="product-description">${safeDescription}</p>
 
         <div class="product-options">
@@ -344,7 +348,8 @@ function addToCart(index) {
     name: product.name,
     price: Number(product.price),
     size,
-    color: formatColorName(color)
+    color: formatColorName(color),
+    quantity: 1
   });
 
   updateCart();
@@ -361,6 +366,9 @@ function updateCart() {
     items.innerHTML = `<p class="empty-cart">Your cart is empty.</p>`;
   } else {
     cart.forEach(item => {
+      const quantity = Number(item.quantity || 1);
+      const lineTotal = Number(item.price) * quantity;
+
       const cartRow = document.createElement("div");
       cartRow.className = "cart-item";
       cartRow.innerHTML = `
@@ -368,16 +376,18 @@ function updateCart() {
           <h5>${item.name}</h5>
           <p>Size: ${item.size}</p>
           <p>Color: ${item.color}</p>
+          <p>Qty: ${quantity}</p>
         </div>
-        <strong>$${Number(item.price).toFixed(2)}</strong>
+        <strong>${formatCurrency(lineTotal)}</strong>
       `;
       items.appendChild(cartRow);
-      total += Number(item.price);
+
+      total += lineTotal;
     });
   }
 
   document.getElementById("cart-count").innerText = cart.length;
-  document.getElementById("cart-total").innerText = "$" + total.toFixed(2);
+  document.getElementById("cart-total").innerText = formatCurrency(total);
 }
 
 function openCart() {
@@ -390,8 +400,40 @@ function closeCart() {
   document.getElementById("overlay").classList.remove("show");
 }
 
+function preparePayFastCheckout() {
+  if (!cart || cart.length === 0) {
+    alert("Your cart is empty.");
+    return false;
+  }
+
+  const total = cart.reduce((sum, item) => {
+    return sum + (Number(item.price) * Number(item.quantity || 1));
+  }, 0);
+
+  const itemNames = cart
+    .map(item => `${item.name} (${item.size}, ${item.color}) x${item.quantity || 1}`)
+    .join(", ");
+
+  const orderId = "LUNARA-" + Date.now();
+
+  const paymentIdField = document.getElementById("pf-payment-id");
+  const amountField = document.getElementById("pf-amount");
+  const itemNameField = document.getElementById("pf-item-name");
+
+  if (!paymentIdField || !amountField || !itemNameField) {
+    alert("Checkout form is missing required PayFast fields.");
+    return false;
+  }
+
+  paymentIdField.value = orderId;
+  amountField.value = total.toFixed(2);
+  itemNameField.value = itemNames;
+
+  return true;
+}
+
 function showCheckoutMessage() {
-  alert("Checkout is not connected yet. Next step will be linking Stripe or another payment option.");
+  alert("Checkout is now connected through PayFast.");
 }
 
 function setActiveFilterButton() {
@@ -495,4 +537,3 @@ document.querySelectorAll(".filters button").forEach(button => {
 });
 
 loadProducts();
-    
