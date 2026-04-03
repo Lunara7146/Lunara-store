@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="announcement-bar">
-    Free shipping on orders over $75 ✦ New cosmic drop live now
+    Free shipping on orders over R75 ✦ New cosmic drop live now
   </div>
 
   <header class="site-header">
@@ -131,11 +131,31 @@
 
     <div id="cart-items" class="cart-items"></div>
 
+    <!-- ✅ UPDATED CHECKOUT -->
     <div class="cart-footer">
-      <h4>Total: <span id="cart-total">$0.00</span></h4>
-      <button class="checkout-btn" type="button" onclick="showCheckoutMessage()">
-        Checkout
-      </button>
+      <h4>Total: <span id="cart-total">R0.00</span></h4>
+
+      <form id="payfast-form" action="https://sandbox.payfast.co.za/eng/process" method="post">
+
+        <input type="hidden" name="merchant_id" value="YOUR_MERCHANT_ID">
+        <input type="hidden" name="merchant_key" value="YOUR_MERCHANT_KEY">
+
+        <input type="hidden" name="return_url" value="https://your-vercel-site.vercel.app/success.html">
+        <input type="hidden" name="cancel_url" value="https://your-vercel-site.vercel.app/cancel.html">
+        <input type="hidden" name="notify_url" value="https://your-vercel-site.vercel.app/notify">
+
+        <input type="hidden" name="name_first" value="Lunara Customer">
+        <input type="hidden" name="email_address" value="customer@email.com">
+
+        <input type="hidden" name="m_payment_id" id="pf-payment-id">
+        <input type="hidden" name="amount" id="pf-amount">
+        <input type="hidden" name="item_name" id="pf-item-name">
+
+        <button class="checkout-btn" type="submit" onclick="return preparePayFastCheckout()">
+          Secure Checkout
+        </button>
+
+      </form>
     </div>
   </aside>
 
@@ -163,4 +183,4 @@
 
   <script src="script.js"></script>
 </body>
-                        </html>
+          </html>
