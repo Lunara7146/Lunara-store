@@ -15,7 +15,9 @@
   <header class="site-header">
     <div class="header-inner">
       <div class="brand">
-        <img src="images/logo-small.png" class="logo" alt="Lunara Logo" />
+        <!-- ✅ UPDATED LOGO -->
+        <img src="images/lunara-website-logo.png" class="logo" alt="Lunara Logo" />
+        
         <div class="brand-text">
           <h1>LUNARA</h1>
           <p>Born to Shine, Dressed to Wander</p>
@@ -76,7 +78,6 @@
     <div class="cart-footer">
       <h4>Total: <span id="cart-total">R0.00</span></h4>
 
-      <!-- CUSTOMER DETAILS -->
       <div class="checkout-fields">
         <input type="text" id="customer-first-name" placeholder="First name" />
         <input type="text" id="customer-last-name" placeholder="Last name" />
@@ -89,34 +90,27 @@
         <input type="text" id="customer-country" value="ZA" />
       </div>
 
-      <!-- PAYFAST FORM -->
       <form id="payfast-form" action="https://sandbox.payfast.co.za/eng/process" method="post">
 
-        <!-- PayFast -->
         <input type="hidden" name="merchant_id" value="34398985" />
         <input type="hidden" name="merchant_key" value="r12bp3covvq41" />
 
-        <!-- URLs (FIXED) -->
         <input type="hidden" name="return_url" value="https://lunara-store-tau.vercel.app/success.html" />
         <input type="hidden" name="cancel_url" value="https://lunara-store-tau.vercel.app/cancel.html" />
         <input type="hidden" name="notify_url" value="https://lunara-store-tau.vercel.app/api/payfast-notify" />
 
-        <!-- CUSTOMER -->
         <input type="hidden" name="name_first" id="pf-name-first" />
         <input type="hidden" name="name_last" id="pf-name-last" />
         <input type="hidden" name="email_address" id="pf-email-address" />
 
-        <!-- ORDER -->
         <input type="hidden" name="m_payment_id" id="pf-payment-id" />
         <input type="hidden" name="amount" id="pf-amount" />
         <input type="hidden" name="item_name" id="pf-item-name" />
 
-        <!-- PRINTIFY -->
         <input type="hidden" name="custom_str1" id="pf-product-id" />
         <input type="hidden" name="custom_str2" id="pf-variant-id" />
         <input type="hidden" name="custom_int1" id="pf-quantity" />
 
-        <!-- ADDRESS -->
         <input type="hidden" name="custom_str3" id="pf-address1" />
         <input type="hidden" name="custom_str4" id="pf-city" />
         <input type="hidden" name="custom_str5" id="pf-region" />
@@ -141,4 +135,4 @@
 
   <script src="script.js"></script>
 </body>
-          </html>
+</html>
