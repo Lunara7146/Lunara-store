@@ -519,7 +519,7 @@ function normalizePrintifyProduct(apiProduct) {
 
   const images = printifyImage
     ? { black: printifyImage }
-    : localProduct?.images || { black: "images/logo-small.png" };
+    : localProduct?.images || { black: "images/lunara-clothing-logo.png" };
 
   return {
     id: apiProduct.id,
