@@ -95,6 +95,15 @@ select {
   width: 58px;
   height: 58px;
   object-fit: contain;
+  filter: drop-shadow(0 0 6px rgba(155, 226, 255, 0.35))
+          drop-shadow(0 0 12px rgba(162, 89, 255, 0.25));
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.logo:hover {
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 10px rgba(155, 226, 255, 0.6))
+          drop-shadow(0 0 18px rgba(255, 79, 216, 0.35));
 }
 
 .brand-text h1 {
@@ -661,4 +670,4 @@ td {
     padding-left: 16px;
     padding-right: 16px;
   }
-}
+                              }
