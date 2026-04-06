@@ -1,6 +1,8 @@
-let cart = [];
+let cart = JSON.parse(localStorage.getItem("lunaraCart")) || [];
 let activeCategory = "all";
 let storeProducts = [];
+let appliedDiscountRate = Number(localStorage.getItem("lunaraDiscountRate")) || 0;
+let appliedPromoCode = localStorage.getItem("lunaraPromoCode") || "";
 
 const fallbackSizes = ["XS", "S", "M", "L", "XL"];
 const fallbackColors = ["black", "white"];
@@ -144,6 +146,15 @@ const localCatalog = [
 ];
 
 const productsContainer = document.querySelector(".products");
+
+function saveCart() {
+  localStorage.setItem("lunaraCart", JSON.stringify(cart));
+}
+
+function savePromoState() {
+  localStorage.setItem("lunaraDiscountRate", String(appliedDiscountRate));
+  localStorage.setItem("lunaraPromoCode", appliedPromoCode);
+}
 
 function formatColorName(color) {
   return color.charAt(0).toUpperCase() + color.slice(1);
@@ -300,13 +311,8 @@ function displayProducts(list) {
 
 function filterProducts(category) {
   activeCategory = category;
-
-  const filteredProducts =
-    category === "all"
-      ? storeProducts
-      : storeProducts.filter(product => product.category === category);
-
-  displayProducts(filteredProducts);
+  displayProducts(getDisplayedProducts());
+  setActiveFilterButton();
 }
 
 function changeColor(index) {
@@ -329,26 +335,49 @@ function addToCart(index) {
   const size = document.getElementById(`size-${index}`)?.value || "M";
   const color = document.getElementById(`color-${index}`)?.value || "black";
 
-  cart.push({
-    id: product.id,
-    name: product.name,
-    price: Number(product.price),
-    size,
-    color: formatColorName(color),
-    quantity: 1,
-    printifyProductId: product.printifyProductId || product.id || "",
-    printifyVariantId: product.printifyVariantId || ""
-  });
+  const existingItem = cart.find(item =>
+    item.id === product.id &&
+    item.size === size &&
+    item.color === formatColorName(color)
+  );
 
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    cart.push({
+      id: product.id,
+      name: product.name,
+      price: Number(product.price),
+      size,
+      color: formatColorName(color),
+      quantity: 1,
+      printifyProductId: product.printifyProductId || product.id || "",
+      printifyVariantId: product.printifyVariantId || ""
+    });
+  }
+
+  saveCart();
   updateCart();
   openCart();
+}
+
+function getCartSubtotal() {
+  return cart.reduce((sum, item) => {
+    return sum + (Number(item.price) * Number(item.quantity || 1));
+  }, 0);
+}
+
+function getDiscountAmount(subtotal) {
+  return subtotal * appliedDiscountRate;
 }
 
 function updateCart() {
   const items = document.getElementById("cart-items");
   items.innerHTML = "";
 
-  let total = 0;
+  const subtotal = getCartSubtotal();
+  const discountAmount = getDiscountAmount(subtotal);
+  const total = subtotal - discountAmount;
 
   if (cart.length === 0) {
     items.innerHTML = `<p class="empty-cart">Your cart is empty.</p>`;
@@ -373,13 +402,15 @@ function updateCart() {
         </div>
       `;
       items.appendChild(cartRow);
-
-      total += lineTotal;
     });
   }
 
-  document.getElementById("cart-count").innerText = cart.length;
+  document.getElementById("cart-count").innerText = cart.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
+  document.getElementById("cart-subtotal").innerText = formatCurrency(subtotal);
+  document.getElementById("cart-discount").innerText = "-" + formatCurrency(discountAmount);
   document.getElementById("cart-total").innerText = formatCurrency(total);
+
+  saveCart();
 }
 
 function removeFromCart(index) {
@@ -399,6 +430,34 @@ function closeCart() {
 
 function getFieldValue(id) {
   return document.getElementById(id)?.value?.trim() || "";
+}
+
+function applyPromoCode() {
+  const input = document.getElementById("promo-code");
+  const promoMessage = document.getElementById("promo-message");
+  const code = (input?.value || "").trim().toUpperCase();
+
+  if (code === "LUNARA15") {
+    appliedDiscountRate = 0.15;
+    appliedPromoCode = code;
+    promoMessage.textContent = "LUNARA15 applied successfully.";
+  } else {
+    appliedDiscountRate = 0;
+    appliedPromoCode = "";
+    promoMessage.textContent = "Invalid promo code.";
+  }
+
+  savePromoState();
+  updateCart();
+}
+
+function restorePromoUI() {
+  if (appliedPromoCode) {
+    const input = document.getElementById("promo-code");
+    const promoMessage = document.getElementById("promo-message");
+    if (input) input.value = appliedPromoCode;
+    if (promoMessage) promoMessage.textContent = `${appliedPromoCode} applied successfully.`;
+  }
 }
 
 function preparePayFastCheckout() {
@@ -422,9 +481,9 @@ function preparePayFastCheckout() {
     return false;
   }
 
-  const total = cart.reduce((sum, item) => {
-    return sum + (Number(item.price) * Number(item.quantity || 1));
-  }, 0);
+  const subtotal = getCartSubtotal();
+  const discountAmount = getDiscountAmount(subtotal);
+  const total = subtotal - discountAmount;
 
   const itemNames = cart
     .map(item => `${item.name} (${item.size}, ${item.color}) x${item.quantity || 1}`)
@@ -569,6 +628,7 @@ async function loadProducts() {
   displayProducts(getDisplayedProducts());
   setActiveFilterButton();
   updateCart();
+  restorePromoUI();
 }
 
 document.querySelectorAll(".filters button").forEach(button => {
