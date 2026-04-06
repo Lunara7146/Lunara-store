@@ -4,210 +4,200 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LUNARA | Born to Shine, Dressed to Wander</title>
-  <meta
-    name="description"
-    content="LUNARA is dreamy, cosmic streetwear with a mystical glow. Shop exclusive hoodies, tees, and pants."
-  />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="announcement-bar">
-    Free shipping on orders over R1200 ✦ New cosmic drop live now
+    <span>Free shipping on orders over R1200 ✦ New cosmic drop live now ✦ Use <strong>LUNARA15</strong> for 15% off</span>
   </div>
 
   <header class="site-header">
     <div class="header-inner">
       <a href="#" class="brand">
-        <img src="images/logo-small.png" alt="LUNARA logo" class="logo" />
+        <img src="images/logo-small.png" alt="Lunara logo" class="logo" />
         <div class="brand-text">
-          <span class="brand-name">LUNARA</span>
-          <span class="brand-tagline">Born to Shine, Dressed to Wander</span>
+          <h1>LUNARA</h1>
+          <p>Born to Shine, Dressed to Wander</p>
         </div>
       </a>
 
       <nav class="main-nav">
         <a href="#shop">Shop</a>
-        <a href="#featured">Featured</a>
-        <a href="#size-guide">Size Guide</a>
-        <a href="#footer">Contact</a>
+        <a href="#about">About</a>
+        <a href="#checkout-section">Checkout</a>
+        <button class="cart-button" onclick="openCart()" aria-label="Open cart">
+          🛒 <span id="cart-count">0</span>
+        </button>
       </nav>
-
-      <div class="header-actions">
-        <button class="icon-btn" id="wishlistToggle" aria-label="Open favorites">
-          <span class="icon-butterfly">🦋</span>
-          <span class="count-badge" id="wishlistCount">0</span>
-        </button>
-
-        <button class="icon-btn" id="cartToggle" aria-label="Open cart">
-          🛒
-          <span class="count-badge" id="cartCount">0</span>
-        </button>
-      </div>
     </div>
   </header>
 
-  <section class="hero">
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <p class="hero-kicker">Mystical streetwear for cosmic souls</p>
-      <h1>LUNARA</h1>
-      <p class="hero-subtext">
-        Dreamy, art-driven pieces designed to feel rare, expressive, and unforgettable.
-      </p>
-      <div class="hero-buttons">
-        <a href="#shop" class="btn btn-primary">Shop the Drop</a>
-        <a href="#featured" class="btn btn-secondary">See Featured</a>
+  <main>
+    <section class="hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <p class="eyebrow">Cosmic streetwear</p>
+        <h2>Dreamy, art-driven pieces made to stand out.</h2>
+        <p class="hero-copy">
+          Explore hoodies, tees, and pants designed with the Lunara glow aesthetic.
+        </p>
+        <div class="hero-actions">
+          <a href="#shop" class="primary-btn">Shop the drop</a>
+          <button class="secondary-btn" onclick="openCart()">View cart</button>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="benefits">
-    <div class="benefit-card">✦ Premium cosmic aesthetic</div>
-    <div class="benefit-card">✦ Free shipping over R1200</div>
-    <div class="benefit-card">✦ Limited dreamy drops</div>
-  </section>
+    <section id="shop" class="shop-section">
+      <div class="section-heading">
+        <p class="section-label">Shop Lunara</p>
+        <h3>Latest collection</h3>
+        <p>Choose your fit, color, and size.</p>
+      </div>
 
-  <section class="featured" id="featured">
-    <div class="section-heading">
-      <p class="section-label">Featured Collection</p>
-      <h2>Chosen for the wanderers</h2>
-      <p>
-        The pieces that define the LUNARA vibe — trippy, celestial, soft, and elevated.
-      </p>
-    </div>
-    <div class="featured-grid" id="featuredGrid"></div>
-  </section>
-
-  <section class="shop-section" id="shop">
-    <div class="section-heading">
-      <p class="section-label">Shop</p>
-      <h2>Explore the collection</h2>
-      <p>Filter by category and save your favorite pieces with the butterfly icon.</p>
-    </div>
-
-    <div class="shop-toolbar">
       <div class="filters">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="hoodie">Hoodies</button>
-        <button class="filter-btn" data-filter="shirt">Shirts</button>
-        <button class="filter-btn" data-filter="pants">Pants</button>
+        <button class="active" onclick="filterProducts('all')">All</button>
+        <button onclick="filterProducts('hoodie')">Hoodies</button>
+        <button onclick="filterProducts('shirt')">Shirts</button>
+        <button onclick="filterProducts('pants')">Pants</button>
       </div>
 
-      <div class="search-wrap">
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Search the collection..."
-          aria-label="Search products"
-        />
+      <div class="products"></div>
+    </section>
+
+    <section id="about" class="about-section">
+      <div class="about-card">
+        <p class="section-label">About Lunara</p>
+        <h3>Mystical streetwear with a premium feel.</h3>
+        <p>
+          LUNARA blends cosmic freedom, dreamy visuals, and statement silhouettes into a store
+          built to feel exclusive, artistic, and clean.
+        </p>
       </div>
+    </section>
+
+    <section id="checkout-section" class="checkout-section">
+      <div class="checkout-card">
+        <div class="section-heading left">
+          <p class="section-label">Checkout details</p>
+          <h3>Complete your order</h3>
+          <p>Fill in your details, apply your promo code, then continue to PayFast.</p>
+        </div>
+
+        <div class="checkout-grid">
+          <div class="checkout-field">
+            <label for="customer-first-name">First name</label>
+            <input id="customer-first-name" type="text" placeholder="First name" />
+          </div>
+
+          <div class="checkout-field">
+            <label for="customer-last-name">Last name</label>
+            <input id="customer-last-name" type="text" placeholder="Last name" />
+          </div>
+
+          <div class="checkout-field">
+            <label for="customer-email">Email</label>
+            <input id="customer-email" type="email" placeholder="Email address" />
+          </div>
+
+          <div class="checkout-field">
+            <label for="customer-phone">Phone</label>
+            <input id="customer-phone" type="tel" placeholder="Phone number" />
+          </div>
+
+          <div class="checkout-field full">
+            <label for="customer-address1">Address</label>
+            <input id="customer-address1" type="text" placeholder="Street address" />
+          </div>
+
+          <div class="checkout-field">
+            <label for="customer-city">City</label>
+            <input id="customer-city" type="text" placeholder="City" />
+          </div>
+
+          <div class="checkout-field">
+            <label for="customer-region">Province / Region</label>
+            <input id="customer-region" type="text" placeholder="Province / Region" />
+          </div>
+
+          <div class="checkout-field">
+            <label for="customer-zip">Postal code</label>
+            <input id="customer-zip" type="text" placeholder="Postal code" />
+          </div>
+
+          <div class="checkout-field">
+            <label for="customer-country">Country code</label>
+            <input id="customer-country" type="text" placeholder="ZA" value="ZA" />
+          </div>
+        </div>
+
+        <div class="promo-wrap">
+          <label for="promo-code">Promo code</label>
+          <div class="promo-row">
+            <input id="promo-code" type="text" placeholder="Enter promo code" />
+            <button type="button" class="secondary-btn" onclick="applyPromoCode()">Apply</button>
+          </div>
+          <p id="promo-message" class="promo-message"></p>
+        </div>
+
+        <form
+          id="payfast-form"
+          action="https://www.payfast.co.za/eng/process"
+          method="post"
+          onsubmit="return preparePayFastCheckout();"
+        >
+          <!-- Replace these with your real PayFast details -->
+          <input type="hidden" name="merchant_id" value="YOUR_MERCHANT_ID" />
+          <input type="hidden" name="merchant_key" value="YOUR_MERCHANT_KEY" />
+          <input type="hidden" name="return_url" value="https://your-vercel-site.vercel.app/success.html" />
+          <input type="hidden" name="cancel_url" value="https://your-vercel-site.vercel.app/cancel.html" />
+          <input type="hidden" name="notify_url" value="https://your-vercel-site.vercel.app/api/payfast-notify" />
+
+          <input type="hidden" name="name_first" id="pf-name-first" />
+          <input type="hidden" name="name_last" id="pf-name-last" />
+          <input type="hidden" name="email_address" id="pf-email-address" />
+          <input type="hidden" name="m_payment_id" id="pf-payment-id" />
+          <input type="hidden" name="amount" id="pf-amount" />
+          <input type="hidden" name="item_name" id="pf-item-name" />
+
+          <input type="hidden" id="pf-product-id" />
+          <input type="hidden" id="pf-variant-id" />
+          <input type="hidden" id="pf-quantity" />
+
+          <input type="hidden" id="pf-address1" />
+          <input type="hidden" id="pf-city" />
+          <input type="hidden" id="pf-region" />
+          <input type="hidden" id="pf-zip" />
+          <input type="hidden" id="pf-country" />
+          <input type="hidden" id="pf-phone" />
+
+          <button type="submit" class="primary-btn checkout-submit">Continue to PayFast</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div id="overlay" class="overlay" onclick="closeCart()"></div>
+
+  <aside id="cart-panel" class="cart-panel">
+    <div class="cart-header">
+      <h4>Your Cart</h4>
+      <button class="close-cart" onclick="closeCart()">✕</button>
     </div>
 
-    <div class="products-grid" id="productsGrid"></div>
-  </section>
-
-  <section class="size-guide" id="size-guide">
-    <div class="section-heading">
-      <p class="section-label">Fit Guide</p>
-      <h2>Size Guide</h2>
-    </div>
-
-    <div class="size-guide-card">
-      <div class="size-box">
-        <h3>Tees</h3>
-        <p>Relaxed streetwear fit. Choose your normal size for an oversized look.</p>
-      </div>
-      <div class="size-box">
-        <h3>Hoodies</h3>
-        <p>Cozy fit with extra room. Size up for a heavier oversized style.</p>
-      </div>
-      <div class="size-box">
-        <h3>Pants</h3>
-        <p>Easy relaxed fit. If you want a baggier feel, go one size up.</p>
-      </div>
-    </div>
-  </section>
-
-  <footer id="footer">
-    <div class="footer-grid">
-      <div>
-        <h3>LUNARA</h3>
-        <p>Dreamy cosmic streetwear for those born to shine.</p>
-      </div>
-
-      <div>
-        <h4>Explore</h4>
-        <a href="#shop">Shop</a>
-        <a href="#featured">Featured</a>
-        <a href="#size-guide">Size Guide</a>
-      </div>
-
-      <div>
-        <h4>Support</h4>
-        <a href="mailto:hello@lunara.store">hello@lunara.store</a>
-        <a href="#">Shipping & Returns</a>
-        <a href="#">FAQs</a>
-      </div>
-    </div>
-
-    <p class="footer-bottom">© 2026 LUNARA. All rights reserved.</p>
-  </footer>
-
-  <!-- CART DRAWER -->
-  <aside class="drawer" id="cartDrawer">
-    <div class="drawer-header">
-      <h3>Your Cart</h3>
-      <button class="close-btn" id="closeCart">✕</button>
-    </div>
-
-    <div class="drawer-body" id="cartItems"></div>
-
-    <div class="promo-box">
-      <label for="promoInput">Promo code</label>
-      <div class="promo-row">
-        <input type="text" id="promoInput" placeholder="Enter code" />
-        <button id="applyPromoBtn" class="btn btn-primary small-btn">Apply</button>
-      </div>
-      <p class="promo-note">Available code: <strong>LUNARA15</strong></p>
-      <p class="promo-message" id="promoMessage"></p>
-    </div>
+    <div id="cart-items"></div>
 
     <div class="cart-summary">
-      <div class="summary-row">
-        <span>Subtotal</span>
-        <span id="subtotalAmount">R0</span>
-      </div>
-      <div class="summary-row">
-        <span>Discount</span>
-        <span id="discountAmount">-R0</span>
-      </div>
-      <div class="summary-row">
-        <span>Shipping</span>
-        <span id="shippingAmount">Calculated at checkout</span>
-      </div>
-      <div class="summary-row total-row">
-        <span>Total</span>
-        <span id="totalAmount">R0</span>
-      </div>
-
-      <button class="btn btn-primary checkout-btn" id="checkoutBtn">
-        Checkout
-      </button>
-    </div>
-  </aside>
-
-  <!-- WISHLIST DRAWER -->
-  <aside class="drawer" id="wishlistDrawer">
-    <div class="drawer-header">
-      <h3>Your Favorites</h3>
-      <button class="close-btn" id="closeWishlist">✕</button>
+      <p>Subtotal: <span id="cart-subtotal">R0.00</span></p>
+      <p>Discount: <span id="cart-discount">R0.00</span></p>
+      <p class="cart-total-line">Total: <span id="cart-total">R0.00</span></p>
     </div>
 
-    <div class="drawer-body" id="wishlistItems"></div>
+    <div class="cart-actions">
+      <a href="#checkout-section" class="primary-btn cart-checkout-link" onclick="closeCart()">Go to checkout</a>
+    </div>
   </aside>
-
-  <div class="drawer-backdrop" id="drawerBackdrop"></div>
 
   <script src="script.js"></script>
 </body>
-        </html>
+            </html>
