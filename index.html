@@ -3,136 +3,211 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LUNARA</title>
+  <title>LUNARA | Born to Shine, Dressed to Wander</title>
+  <meta
+    name="description"
+    content="LUNARA is dreamy, cosmic streetwear with a mystical glow. Shop exclusive hoodies, tees, and pants."
+  />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
   <div class="announcement-bar">
-    Free shipping on orders over R75 ✦ New cosmic drop live now
+    Free shipping on orders over R1200 ✦ New cosmic drop live now
   </div>
 
   <header class="site-header">
     <div class="header-inner">
-      <div class="brand">
-        <!-- ✅ UPDATED LOGO -->
-        <img src="images/lunara-website-logo.png" class="logo" alt="Lunara Logo" />
-        
+      <a href="#" class="brand">
+        <img src="images/logo-small.png" alt="LUNARA logo" class="logo" />
         <div class="brand-text">
-          <h1>LUNARA</h1>
-          <p>Born to Shine, Dressed to Wander</p>
+          <span class="brand-name">LUNARA</span>
+          <span class="brand-tagline">Born to Shine, Dressed to Wander</span>
         </div>
-      </div>
+      </a>
 
       <nav class="main-nav">
         <a href="#shop">Shop</a>
+        <a href="#featured">Featured</a>
         <a href="#size-guide">Size Guide</a>
-        <a href="#footer">About</a>
+        <a href="#footer">Contact</a>
       </nav>
 
-      <button class="cart-btn" onclick="openCart()">
-        Cart (<span id="cart-count">0</span>)
-      </button>
+      <div class="header-actions">
+        <button class="icon-btn" id="wishlistToggle" aria-label="Open favorites">
+          <span class="icon-butterfly">🦋</span>
+          <span class="count-badge" id="wishlistCount">0</span>
+        </button>
+
+        <button class="icon-btn" id="cartToggle" aria-label="Open cart">
+          🛒
+          <span class="count-badge" id="cartCount">0</span>
+        </button>
+      </div>
     </div>
   </header>
 
   <section class="hero">
+    <div class="hero-overlay"></div>
     <div class="hero-content">
-      <span class="eyebrow">NEW COLLECTION</span>
-      <h2>Streetwear with a cosmic soul.</h2>
-      <p>
-        Discover oversized hoodies, expressive tees, and festival-ready pants
-        inspired by moonlight, freedom, and psychedelic energy.
+      <p class="hero-kicker">Mystical streetwear for cosmic souls</p>
+      <h1>LUNARA</h1>
+      <p class="hero-subtext">
+        Dreamy, art-driven pieces designed to feel rare, expressive, and unforgettable.
       </p>
-      <div class="hero-actions">
-        <a href="#shop" class="primary-btn">Shop Now</a>
-        <a href="#size-guide" class="secondary-btn">View Size Guide</a>
+      <div class="hero-buttons">
+        <a href="#shop" class="btn btn-primary">Shop the Drop</a>
+        <a href="#featured" class="btn btn-secondary">See Featured</a>
       </div>
     </div>
   </section>
 
-  <section class="section-heading">
-    <p class="section-label">LUNARA DROP</p>
-    <h3>Shop the collection</h3>
+  <section class="benefits">
+    <div class="benefit-card">✦ Premium cosmic aesthetic</div>
+    <div class="benefit-card">✦ Free shipping over R1200</div>
+    <div class="benefit-card">✦ Limited dreamy drops</div>
   </section>
 
-  <section class="filters">
-    <button onclick="filterProducts('all')">All</button>
-    <button onclick="filterProducts('hoodie')">Hoodies</button>
-    <button onclick="filterProducts('shirt')">T-Shirts</button>
-    <button onclick="filterProducts('pants')">Pants</button>
+  <section class="featured" id="featured">
+    <div class="section-heading">
+      <p class="section-label">Featured Collection</p>
+      <h2>Chosen for the wanderers</h2>
+      <p>
+        The pieces that define the LUNARA vibe — trippy, celestial, soft, and elevated.
+      </p>
+    </div>
+    <div class="featured-grid" id="featuredGrid"></div>
   </section>
 
-  <section id="shop" class="products"></section>
+  <section class="shop-section" id="shop">
+    <div class="section-heading">
+      <p class="section-label">Shop</p>
+      <h2>Explore the collection</h2>
+      <p>Filter by category and save your favorite pieces with the butterfly icon.</p>
+    </div>
 
-  <div id="overlay" class="overlay" onclick="closeCart()"></div>
+    <div class="shop-toolbar">
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="hoodie">Hoodies</button>
+        <button class="filter-btn" data-filter="shirt">Shirts</button>
+        <button class="filter-btn" data-filter="pants">Pants</button>
+      </div>
 
-  <aside id="cart-panel" class="cart-panel">
-    <div class="cart-header">
+      <div class="search-wrap">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search the collection..."
+          aria-label="Search products"
+        />
+      </div>
+    </div>
+
+    <div class="products-grid" id="productsGrid"></div>
+  </section>
+
+  <section class="size-guide" id="size-guide">
+    <div class="section-heading">
+      <p class="section-label">Fit Guide</p>
+      <h2>Size Guide</h2>
+    </div>
+
+    <div class="size-guide-card">
+      <div class="size-box">
+        <h3>Tees</h3>
+        <p>Relaxed streetwear fit. Choose your normal size for an oversized look.</p>
+      </div>
+      <div class="size-box">
+        <h3>Hoodies</h3>
+        <p>Cozy fit with extra room. Size up for a heavier oversized style.</p>
+      </div>
+      <div class="size-box">
+        <h3>Pants</h3>
+        <p>Easy relaxed fit. If you want a baggier feel, go one size up.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer id="footer">
+    <div class="footer-grid">
+      <div>
+        <h3>LUNARA</h3>
+        <p>Dreamy cosmic streetwear for those born to shine.</p>
+      </div>
+
+      <div>
+        <h4>Explore</h4>
+        <a href="#shop">Shop</a>
+        <a href="#featured">Featured</a>
+        <a href="#size-guide">Size Guide</a>
+      </div>
+
+      <div>
+        <h4>Support</h4>
+        <a href="mailto:hello@lunara.store">hello@lunara.store</a>
+        <a href="#">Shipping & Returns</a>
+        <a href="#">FAQs</a>
+      </div>
+    </div>
+
+    <p class="footer-bottom">© 2026 LUNARA. All rights reserved.</p>
+  </footer>
+
+  <!-- CART DRAWER -->
+  <aside class="drawer" id="cartDrawer">
+    <div class="drawer-header">
       <h3>Your Cart</h3>
-      <button class="close-cart" onclick="closeCart()">✕</button>
+      <button class="close-btn" id="closeCart">✕</button>
     </div>
 
-    <div id="cart-items" class="cart-items"></div>
+    <div class="drawer-body" id="cartItems"></div>
 
-    <div class="cart-footer">
-      <h4>Total: <span id="cart-total">R0.00</span></h4>
+    <div class="promo-box">
+      <label for="promoInput">Promo code</label>
+      <div class="promo-row">
+        <input type="text" id="promoInput" placeholder="Enter code" />
+        <button id="applyPromoBtn" class="btn btn-primary small-btn">Apply</button>
+      </div>
+      <p class="promo-note">Available code: <strong>LUNARA15</strong></p>
+      <p class="promo-message" id="promoMessage"></p>
+    </div>
 
-      <div class="checkout-fields">
-        <input type="text" id="customer-first-name" placeholder="First name" />
-        <input type="text" id="customer-last-name" placeholder="Last name" />
-        <input type="email" id="customer-email" placeholder="Email address" />
-        <input type="tel" id="customer-phone" placeholder="Phone number" />
-        <input type="text" id="customer-address1" placeholder="Street address" />
-        <input type="text" id="customer-city" placeholder="City" />
-        <input type="text" id="customer-region" placeholder="Province / Region" />
-        <input type="text" id="customer-zip" placeholder="Postal code" />
-        <input type="text" id="customer-country" value="ZA" />
+    <div class="cart-summary">
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span id="subtotalAmount">R0</span>
+      </div>
+      <div class="summary-row">
+        <span>Discount</span>
+        <span id="discountAmount">-R0</span>
+      </div>
+      <div class="summary-row">
+        <span>Shipping</span>
+        <span id="shippingAmount">Calculated at checkout</span>
+      </div>
+      <div class="summary-row total-row">
+        <span>Total</span>
+        <span id="totalAmount">R0</span>
       </div>
 
-      <form id="payfast-form" action="https://sandbox.payfast.co.za/eng/process" method="post">
-
-        <input type="hidden" name="merchant_id" value="34398985" />
-        <input type="hidden" name="merchant_key" value="r12bp3covvq41" />
-
-        <input type="hidden" name="return_url" value="https://lunara-store-tau.vercel.app/success.html" />
-        <input type="hidden" name="cancel_url" value="https://lunara-store-tau.vercel.app/cancel.html" />
-        <input type="hidden" name="notify_url" value="https://lunara-store-tau.vercel.app/api/payfast-notify" />
-
-        <input type="hidden" name="name_first" id="pf-name-first" />
-        <input type="hidden" name="name_last" id="pf-name-last" />
-        <input type="hidden" name="email_address" id="pf-email-address" />
-
-        <input type="hidden" name="m_payment_id" id="pf-payment-id" />
-        <input type="hidden" name="amount" id="pf-amount" />
-        <input type="hidden" name="item_name" id="pf-item-name" />
-
-        <input type="hidden" name="custom_str1" id="pf-product-id" />
-        <input type="hidden" name="custom_str2" id="pf-variant-id" />
-        <input type="hidden" name="custom_int1" id="pf-quantity" />
-
-        <input type="hidden" name="custom_str3" id="pf-address1" />
-        <input type="hidden" name="custom_str4" id="pf-city" />
-        <input type="hidden" name="custom_str5" id="pf-region" />
-        <input type="hidden" name="custom_str6" id="pf-zip" />
-        <input type="hidden" name="custom_str7" id="pf-country" />
-        <input type="hidden" name="custom_str8" id="pf-phone" />
-
-        <button class="checkout-btn" type="submit" onclick="return preparePayFastCheckout()">
-          Secure Checkout
-        </button>
-
-      </form>
+      <button class="btn btn-primary checkout-btn" id="checkoutBtn">
+        Checkout
+      </button>
     </div>
   </aside>
 
-  <footer id="footer" class="site-footer">
-    <div class="footer-inner">
-      <h4>LUNARA</h4>
-      <p>Cosmic streetwear for dreamers.</p>
+  <!-- WISHLIST DRAWER -->
+  <aside class="drawer" id="wishlistDrawer">
+    <div class="drawer-header">
+      <h3>Your Favorites</h3>
+      <button class="close-btn" id="closeWishlist">✕</button>
     </div>
-  </footer>
+
+    <div class="drawer-body" id="wishlistItems"></div>
+  </aside>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
 
   <script src="script.js"></script>
 </body>
-</html>
+        </html>
