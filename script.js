@@ -1,11 +1,20 @@
-let cart = JSON.parse(localStorage.getItem("lunaraCart")) || [];
+let cart = [];
 let activeCategory = "all";
 let storeProducts = [];
-let appliedDiscountRate = Number(localStorage.getItem("lunaraDiscountRate")) || 0;
-let appliedPromoCode = localStorage.getItem("lunaraPromoCode") || "";
+let favorites = JSON.parse(localStorage.getItem("lunaraFavorites")) || [];
+let appliedPromo = null;
 
 const fallbackSizes = ["XS", "S", "M", "L", "XL"];
 const fallbackColors = ["black", "white"];
+
+const promoCodes = {
+  LUNARA15: {
+    code: "LUNARA15",
+    type: "percent",
+    value: 15,
+    label: "15% off"
+  }
+};
 
 const localCatalog = [
   {
@@ -147,15 +156,6 @@ const localCatalog = [
 
 const productsContainer = document.querySelector(".products");
 
-function saveCart() {
-  localStorage.setItem("lunaraCart", JSON.stringify(cart));
-}
-
-function savePromoState() {
-  localStorage.setItem("lunaraDiscountRate", String(appliedDiscountRate));
-  localStorage.setItem("lunaraPromoCode", appliedPromoCode);
-}
-
 function formatColorName(color) {
   return color.charAt(0).toUpperCase() + color.slice(1);
 }
@@ -248,8 +248,31 @@ function getAvailableSizes(product) {
   return fallbackSizes;
 }
 
+function isFavorite(productId) {
+  return favorites.includes(productId);
+}
+
+function saveFavorites() {
+  localStorage.setItem("lunaraFavorites", JSON.stringify(favorites));
+}
+
+function toggleFavorite(productId) {
+  if (isFavorite(productId)) {
+    favorites = favorites.filter(id => id !== productId);
+  } else {
+    favorites.push(productId);
+  }
+
+  saveFavorites();
+  displayProducts(getDisplayedProducts());
+  setActiveFilterButton();
+}
+
 function getDisplayedProducts() {
   if (activeCategory === "all") return storeProducts;
+  if (activeCategory === "favorites") {
+    return storeProducts.filter(product => isFavorite(product.id));
+  }
   return storeProducts.filter(product => product.category === activeCategory);
 }
 
@@ -257,7 +280,12 @@ function displayProducts(list) {
   productsContainer.innerHTML = "";
 
   if (!list.length) {
-    productsContainer.innerHTML = `<p class="empty-cart">No products found in this category yet.</p>`;
+    const message =
+      activeCategory === "favorites"
+        ? "No favorites yet. Tap the butterfly to save your favorite pieces."
+        : "No products found in this category yet.";
+
+    productsContainer.innerHTML = `<p class="empty-cart">${message}</p>`;
     return;
   }
 
@@ -273,6 +301,16 @@ function displayProducts(list) {
 
     div.innerHTML = `
       <div class="product-image-wrap">
+        <button
+          class="favorite-btn ${isFavorite(product.id) ? "active" : ""}"
+          type="button"
+          onclick="toggleFavorite('${product.id}')"
+          aria-label="Toggle favorite"
+          title="Add to favorites"
+        >
+          <span class="butterfly-icon">🦋</span>
+        </button>
+
         <img
           id="img-${index}"
           src="${imageSrc}"
@@ -335,28 +373,17 @@ function addToCart(index) {
   const size = document.getElementById(`size-${index}`)?.value || "M";
   const color = document.getElementById(`color-${index}`)?.value || "black";
 
-  const existingItem = cart.find(item =>
-    item.id === product.id &&
-    item.size === size &&
-    item.color === formatColorName(color)
-  );
+  cart.push({
+    id: product.id,
+    name: product.name,
+    price: Number(product.price),
+    size,
+    color: formatColorName(color),
+    quantity: 1,
+    printifyProductId: product.printifyProductId || product.id || "",
+    printifyVariantId: product.printifyVariantId || ""
+  });
 
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart.push({
-      id: product.id,
-      name: product.name,
-      price: Number(product.price),
-      size,
-      color: formatColorName(color),
-      quantity: 1,
-      printifyProductId: product.printifyProductId || product.id || "",
-      printifyVariantId: product.printifyVariantId || ""
-    });
-  }
-
-  saveCart();
   updateCart();
   openCart();
 }
@@ -368,16 +395,54 @@ function getCartSubtotal() {
 }
 
 function getDiscountAmount(subtotal) {
-  return subtotal * appliedDiscountRate;
+  if (!appliedPromo) return 0;
+
+  if (appliedPromo.type === "percent") {
+    return subtotal * (appliedPromo.value / 100);
+  }
+
+  return 0;
+}
+
+function applyPromoCode() {
+  const promoInput = document.getElementById("promo-code");
+  const promoMessage = document.getElementById("promo-message");
+
+  if (!promoInput || !promoMessage) return;
+
+  const enteredCode = promoInput.value.trim().toUpperCase();
+
+  if (!enteredCode) {
+    appliedPromo = null;
+    promoMessage.textContent = "Enter a promo code.";
+    promoMessage.className = "promo-message error";
+    updateCart();
+    return;
+  }
+
+  if (!promoCodes[enteredCode]) {
+    appliedPromo = null;
+    promoMessage.textContent = "That promo code is not active right now.";
+    promoMessage.className = "promo-message error";
+    updateCart();
+    return;
+  }
+
+  appliedPromo = promoCodes[enteredCode];
+  promoMessage.textContent = `${appliedPromo.code} applied — ${appliedPromo.label}.`;
+  promoMessage.className = "promo-message success";
+  updateCart();
 }
 
 function updateCart() {
   const items = document.getElementById("cart-items");
+  if (!items) return;
+
   items.innerHTML = "";
 
   const subtotal = getCartSubtotal();
-  const discountAmount = getDiscountAmount(subtotal);
-  const total = subtotal - discountAmount;
+  const discount = getDiscountAmount(subtotal);
+  const total = Math.max(subtotal - discount, 0);
 
   if (cart.length === 0) {
     items.innerHTML = `<p class="empty-cart">Your cart is empty.</p>`;
@@ -405,12 +470,15 @@ function updateCart() {
     });
   }
 
-  document.getElementById("cart-count").innerText = cart.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
-  document.getElementById("cart-subtotal").innerText = formatCurrency(subtotal);
-  document.getElementById("cart-discount").innerText = "-" + formatCurrency(discountAmount);
-  document.getElementById("cart-total").innerText = formatCurrency(total);
+  const cartCount = document.getElementById("cart-count");
+  const cartSubtotal = document.getElementById("cart-subtotal");
+  const cartDiscount = document.getElementById("cart-discount");
+  const cartTotal = document.getElementById("cart-total");
 
-  saveCart();
+  if (cartCount) cartCount.innerText = cart.length;
+  if (cartSubtotal) cartSubtotal.innerText = formatCurrency(subtotal);
+  if (cartDiscount) cartDiscount.innerText = "-" + formatCurrency(discount);
+  if (cartTotal) cartTotal.innerText = formatCurrency(total);
 }
 
 function removeFromCart(index) {
@@ -419,45 +487,17 @@ function removeFromCart(index) {
 }
 
 function openCart() {
-  document.getElementById("cart-panel").classList.add("open");
-  document.getElementById("overlay").classList.add("show");
+  document.getElementById("cart-panel")?.classList.add("open");
+  document.getElementById("overlay")?.classList.add("show");
 }
 
 function closeCart() {
-  document.getElementById("cart-panel").classList.remove("open");
-  document.getElementById("overlay").classList.remove("show");
+  document.getElementById("cart-panel")?.classList.remove("open");
+  document.getElementById("overlay")?.classList.remove("show");
 }
 
 function getFieldValue(id) {
   return document.getElementById(id)?.value?.trim() || "";
-}
-
-function applyPromoCode() {
-  const input = document.getElementById("promo-code");
-  const promoMessage = document.getElementById("promo-message");
-  const code = (input?.value || "").trim().toUpperCase();
-
-  if (code === "LUNARA15") {
-    appliedDiscountRate = 0.15;
-    appliedPromoCode = code;
-    promoMessage.textContent = "LUNARA15 applied successfully.";
-  } else {
-    appliedDiscountRate = 0;
-    appliedPromoCode = "";
-    promoMessage.textContent = "Invalid promo code.";
-  }
-
-  savePromoState();
-  updateCart();
-}
-
-function restorePromoUI() {
-  if (appliedPromoCode) {
-    const input = document.getElementById("promo-code");
-    const promoMessage = document.getElementById("promo-message");
-    if (input) input.value = appliedPromoCode;
-    if (promoMessage) promoMessage.textContent = `${appliedPromoCode} applied successfully.`;
-  }
 }
 
 function preparePayFastCheckout() {
@@ -482,8 +522,8 @@ function preparePayFastCheckout() {
   }
 
   const subtotal = getCartSubtotal();
-  const discountAmount = getDiscountAmount(subtotal);
-  const total = subtotal - discountAmount;
+  const discount = getDiscountAmount(subtotal);
+  const total = Math.max(subtotal - discount, 0);
 
   const itemNames = cart
     .map(item => `${item.name} (${item.size}, ${item.color}) x${item.quantity || 1}`)
@@ -510,6 +550,9 @@ function preparePayFastCheckout() {
   document.getElementById("pf-country").value = country.toUpperCase();
   document.getElementById("pf-phone").value = phone;
 
+  const promoField = document.getElementById("pf-promo-code");
+  if (promoField) promoField.value = appliedPromo?.code || "";
+
   if (!primaryItem.printifyProductId || !primaryItem.printifyVariantId) {
     alert("This product is not fully mapped to Printify yet. Payment can continue, but automatic fulfilment will need the correct product and variant IDs.");
   }
@@ -522,30 +565,16 @@ function setActiveFilterButton() {
 
   buttons.forEach(button => {
     button.classList.remove("active");
+    const text = button.textContent.toLowerCase();
 
-    if (button.textContent.toLowerCase().includes(activeCategory)) {
+    if (activeCategory === "all" && text === "all") {
       button.classList.add("active");
-    }
-
-    if (activeCategory === "all" && button.textContent.toLowerCase() === "all") {
+    } else if (activeCategory === "favorites" && text === "favorites") {
+      button.classList.add("active");
+    } else if (text.includes(activeCategory) && activeCategory !== "all" && activeCategory !== "favorites") {
       button.classList.add("active");
     }
   });
-}
-
-function getVariantIdFromProduct(apiProduct, size) {
-  const variants = apiProduct.variants || [];
-  if (!variants.length) return "";
-
-  const normalizedSize = String(size || "").toLowerCase();
-
-  const matchingVariant = variants.find(variant => {
-    const title = String(variant.title || "").toLowerCase();
-    const name = String(variant.name || "").toLowerCase();
-    return title.includes(normalizedSize) || name.includes(normalizedSize);
-  });
-
-  return matchingVariant?.id || variants[0]?.id || "";
 }
 
 function normalizePrintifyProduct(apiProduct) {
@@ -628,7 +657,6 @@ async function loadProducts() {
   displayProducts(getDisplayedProducts());
   setActiveFilterButton();
   updateCart();
-  restorePromoUI();
 }
 
 document.querySelectorAll(".filters button").forEach(button => {
