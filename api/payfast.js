@@ -11,9 +11,10 @@ export default async function handler(req, res) {
     merchant_id: process.env.PAYFAST_MERCHANT_ID,
     merchant_key: process.env.PAYFAST_MERCHANT_KEY,
 
-    return_url: "https://your-site.vercel.app/success.html",
-    cancel_url: "https://your-site.vercel.app/cancel.html",
-    notify_url: "https://your-site.vercel.app/api/payfast-notify",
+    // ✅ YOUR REAL DOMAIN APPLIED
+    return_url: "https://lunara-store-tau.vercel.app/success.html",
+    cancel_url: "https://lunara-store-tau.vercel.app/cancel.html",
+    notify_url: "https://lunara-store-tau.vercel.app/api/payfast-notify",
 
     name_first: data.firstName,
     name_last: data.lastName,
@@ -23,17 +24,21 @@ export default async function handler(req, res) {
     amount: data.amount,
     item_name: "Lunara Order",
 
+    // Send full cart data
     custom_str1: JSON.stringify(data.cart)
   };
 
+  // Build parameter string
   let paramString = Object.entries(pfData)
     .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
     .join("&");
 
+  // Add passphrase if exists
   if (process.env.PAYFAST_PASSPHRASE) {
     paramString += `&passphrase=${encodeURIComponent(process.env.PAYFAST_PASSPHRASE)}`;
   }
 
+  // Generate signature
   const signature = crypto
     .createHash("md5")
     .update(paramString)
