@@ -1,41 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Lunara</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUNARA | Born to Shine, Dressed to Wander</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
 
-  <!-- 🌌 CINEMATIC LUNARA INTRO -->
-  <div class="lunara-intro">
-    <img src="images/lunara-moon-refined.png" class="moon">
-    <img src="images/lunara-butterfly-refined.png" class="butterfly">
-    <div class="sparkles"></div>
+  <div class="lunara-intro" id="lunara-intro-section">
+    <div class="animation-wrapper">
+        <img src="images/lunara-moon-refined.png" class="moon-img" alt="Moon">
+        <img src="images/lunara-butterfly-refined.png" id="butterfly" class="butterfly-img" alt="Butterfly">
+        <div class="ambient-glow"></div>
+    </div>
   </div>
 
-  <!-- 🛍️ MAIN STORE CONTENT -->
-  <header>
-    <h1 class="logo-text">LUNARA</h1>
-    <p class="tagline">Wear the glow. Become the energy.</p>
+  <div class="announcement-bar">
+    <span>Free shipping on orders over R1200 ✦ New cosmic drop live now ✦ Use <strong>LUNARA15</strong> for 15% off</span>
+  </div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#" class="brand">
+        <img src="images/logo-small.png" alt="Lunara logo" class="logo" />
+        <div class="brand-text">
+          <h1>LUNARA</h1>
+          <p>Born to Shine, Dressed to Wander</p>
+        </div>
+      </a>
+
+      <nav class="main-nav">
+        <a href="#shop">Shop</a>
+        <a href="#about">About</a>
+        <a href="#checkout-section">Checkout</a>
+        <button class="cart-button" onclick="openCart()" aria-label="Open cart">
+          🛒 <span id="cart-count">0</span>
+        </button>
+      </nav>
+    </div>
   </header>
 
-  <section class="hero">
-    <h2>Luxury Streetwear Redefined</h2>
-    <p>Exclusive designs. Limited drops. Built to stand out.</p>
-    <button class="shop-btn">Shop Now</button>
-  </section>
+  <main>
+    <section class="hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <p class="eyebrow">Cosmic streetwear</p>
+        <h2>Dreamy, art-driven pieces made to stand out.</h2>
+        <p class="hero-copy">
+          Explore hoodies, tees, and pants designed with the Lunara glow aesthetic.
+        </p>
+        <div class="hero-actions">
+          <a href="#shop" class="primary-btn">Shop the drop</a>
+          <button class="secondary-btn" onclick="openCart()">View cart</button>
+        </div>
+      </div>
+    </section>
 
-  <section class="products" id="products">
-    <!-- Your Printify products will load here -->
-  </section>
+    <section id="shop" class="shop-section">
+      <div class="section-heading">
+        <p class="section-label">Shop Lunara</p>
+        <h3>Latest collection</h3>
+        <p>Choose your fit, color, and size.</p>
+      </div>
 
-  <!-- ⚡ SCRIPT -->
+      <div class="filters">
+        <button class="active" onclick="filterProducts('all')">All</button>
+        <button onclick="filterProducts('hoodie')">Hoodies</button>
+        <button onclick="filterProducts('shirt')">Shirts</button>
+        <button onclick="filterProducts('pants')">Pants</button>
+      </div>
+
+      <div class="products"></div>
+    </section>
+
+    <section id="about" class="about-section">
+      <div class="about-card">
+        <p class="section-label">About Lunara</p>
+        <h3>Mystical streetwear with a premium feel.</h3>
+        <p>
+          LUNARA blends cosmic freedom, dreamy visuals, and statement silhouettes into a store
+          built to feel exclusive, artistic, and clean.
+        </p>
+      </div>
+    </section>
+
+    <section id="checkout-section" class="checkout-section">
+      <div class="checkout-card">
+        <div class="section-heading left">
+          <p class="section-label">Checkout details</p>
+          <h3>Complete your order</h3>
+          <p>Fill in your details, apply your promo code, then continue to PayFast.</p>
+        </div>
+
+        <div class="checkout-grid">
+          <div class="checkout-field">
+            <label for="customer-first-name">First name</label>
+            <input id="customer-first-name" type="text" placeholder="First name" />
+          </div>
+          <div class="checkout-field">
+            <label for="customer-last-name">Last name</label>
+            <input id="customer-last-name" type="text" placeholder="Last name" />
+          </div>
+          <div class="checkout-field">
+            <label for="customer-email">Email</label>
+            <input id="customer-email" type="email" placeholder="Email address" />
+          </div>
+          <div class="checkout-field">
+            <label for="customer-phone">Phone</label>
+            <input id="customer-phone" type="tel" placeholder="Phone number" />
+          </div>
+          <div class="checkout-field full">
+            <label for="customer-address1">Address</label>
+            <input id="customer-address1" type="text" placeholder="Street address" />
+          </div>
+          <div class="checkout-field">
+            <label for="customer-city">City</label>
+            <input id="customer-city" type="text" placeholder="City" />
+          </div>
+          <div class="checkout-field">
+            <label for="customer-region">Province / Region</label>
+            <input id="customer-region" type="text" placeholder="Province / Region" />
+          </div>
+          <div class="checkout-field">
+            <label for="customer-zip">Postal code</label>
+            <input id="customer-zip" type="text" placeholder="Postal code" />
+          </div>
+          <div class="checkout-field">
+            <label for="customer-country">Country code</label>
+            <input id="customer-country" type="text" placeholder="ZA" value="ZA" />
+          </div>
+        </div>
+
+        <div class="promo-wrap">
+          <label for="promo-code">Promo code</label>
+          <div class="promo-row">
+            <input id="promo-code" type="text" placeholder="Enter promo code" />
+            <button type="button" class="secondary-btn" onclick="applyPromoCode()">Apply</button>
+          </div>
+          <p id="promo-message" class="promo-message"></p>
+        </div>
+
+        <form id="payfast-form" action="https://www.payfast.co.za/eng/process" method="post" onsubmit="return preparePayFastCheckout();">
+          <input type="hidden" name="merchant_id" value="YOUR_MERCHANT_ID" />
+          <input type="hidden" name="merchant_key" value="YOUR_MERCHANT_KEY" />
+          <input type="hidden" name="return_url" value="https://your-site.vercel.app/success.html" />
+          <input type="hidden" name="cancel_url" value="https://your-site.vercel.app/cancel.html" />
+          <input type="hidden" name="notify_url" value="https://your-site.vercel.app/api/payfast-notify" />
+
+          <input type="hidden" name="name_first" id="pf-name-first" />
+          <input type="hidden" name="name_last" id="pf-name-last" />
+          <input type="hidden" name="email_address" id="pf-email-address" />
+          <input type="hidden" name="m_payment_id" id="pf-payment-id" />
+          <input type="hidden" name="amount" id="pf-amount" />
+          <input type="hidden" name="item_name" id="pf-item-name" />
+
+          <button type="submit" class="primary-btn checkout-submit">Continue to PayFast</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div id="overlay" class="overlay" onclick="closeCart()"></div>
+
+  <aside id="cart-panel" class="cart-panel">
+    <div class="cart-header">
+      <h4>Your Cart</h4>
+      <button class="close-cart" onclick="closeCart()">✕</button>
+    </div>
+    <div id="cart-items"></div>
+    <div class="cart-summary">
+      <p>Subtotal: <span id="cart-subtotal">R0.00</span></p>
+      <p>Discount: <span id="cart-discount">R0.00</span></p>
+      <p class="cart-total-line">Total: <span id="cart-total">R0.00</span></p>
+    </div>
+    <div class="cart-actions">
+      <a href="#checkout-section" class="primary-btn cart-checkout-link" onclick="closeCart()">Go to checkout</a>
+    </div>
+  </aside>
+
   <script src="script.js"></script>
-
 </body>
-</html>
+            </html>
