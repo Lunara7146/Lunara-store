@@ -1,63 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LUNARA</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUNARA | Born to Shine, Dressed to Wander</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
+  <div class="announcement-bar">
+    <span>Free shipping on orders over R1200 ✦ New cosmic drop live now ✦ Use <strong>LUNARA15</strong> for 15% off</span>
+  </div>
 
-<!-- Announcement -->
-<div class="announcement">
-Free shipping on orders over R1200 ✦ New cosmic drop live now
-</div>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#" class="brand brand-centered">
+        <img src="images/lunara-website-logo.png" alt="Lunara logo" class="logo premium-logo" />
+      </a>
 
-<header>
-<img src="images/logo-small.png" class="logo">
-<h2 class="tagline">Born to Shine, Dressed to Wander</h2>
+      <nav class="main-nav">
+        <a href="#shop">Shop</a>
+        <a href="#about">About</a>
+        <a href="#checkout-section">Checkout</a>
+        <button class="cart-button" onclick="openCart()" aria-label="Open cart">
+          🛒 <span id="cart-count">0</span>
+        </button>
+      </nav>
+    </div>
+  </header>
 
-<div class="cart" onclick="toggleCart()">
-🛒 Cart (<span id="cart-count">0</span>)
-</div>
-</header>
+  <main>
+    <section class="hero luxury-hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content centered-hero-content">
+        <p class="eyebrow">Cosmic Streetwear</p>
+        <h2>Dreamy, art-driven pieces made to stand out.</h2>
+        <p class="hero-copy">
+          Explore hoodies, tees, and pants designed with the Lunara glow aesthetic.
+        </p>
+        <div class="hero-actions centered-actions">
+          <a href="#shop" class="primary-btn">Shop the Drop</a>
+          <button class="secondary-btn" onclick="openCart()">View Cart</button>
+        </div>
+      </div>
+    </section>
 
-<!-- HERO -->
-<section class="hero">
-<h1>LUNARA</h1>
-<p>Trippy streetwear inspired by cosmic freedom.</p>
-<button class="shop-btn" onclick="scrollToShop()">Shop Now</button>
-</section>
+    <section id="shop" class="shop-section">
+      <div class="section-heading centered-section-heading">
+        <p class="section-label">Shop Lunara</p>
+        <h3>Latest Collection</h3>
+        <p>Choose your fit, color, and size.</p>
+      </div>
 
-<!-- FILTERS -->
-<section class="filters">
-<button onclick="filterProducts('all')">All</button>
-<button onclick="filterProducts('hoodie')">Hoodies</button>
-<button onclick="filterProducts('shirt')">Shirts</button>
-<button onclick="filterProducts('pants')">Pants</button>
-</section>
+      <div class="filters">
+        <button class="active" onclick="filterProducts('all')">All</button>
+        <button onclick="filterProducts('hoodie')">Hoodies</button>
+        <button onclick="filterProducts('shirt')">Shirts</button>
+        <button onclick="filterProducts('pants')">Pants</button>
+      </div>
 
-<!-- PRODUCTS -->
-<section id="shop" class="products"></section>
+      <div class="products"></div>
+    </section>
 
-<!-- CART PANEL -->
-<div id="cart-panel" class="cart-panel">
-<h2>Your Cart</h2>
+    <section id="about" class="about-section">
+      <div class="about-card centered-about-card">
+        <p class="section-label">About Lunara</p>
+        <h3>Mystical streetwear with a premium feel.</h3>
+        <p>
+          LUNARA blends cosmic freedom, dreamy visuals, and statement silhouettes into a store
+          built to feel exclusive, artistic, and clean.
+        </p>
+      </div>
+    </section>
 
-<div id="cart-items"></div>
+    <section id="checkout-section" class="checkout-section">
+      <div class="checkout-card">
+        <div class="section-heading centered-section-heading">
+          <p class="section-label">Checkout Details</p>
+          <h3>Complete Your Order</h3>
+          <p>Fill in your details, apply your promo code, then continue to PayFast.</p>
+        </div>
 
-<input id="promo-input" placeholder="Promo code">
-<button onclick="applyPromo()">Apply</button>
+        <div class="checkout-grid">
+          <div class="checkout-field">
+            <label for="customer-first-name">First name</label>
+            <input id="customer-first-name" type="text" placeholder="First name" />
+          </div>
 
-<p id="discount-msg"></p>
+          <div class="checkout-field">
+            <label for="customer-last-name">Last name</label>
+            <input id="customer-last-name" type="text" placeholder="Last name" />
+          </div>
 
-<h3>Total: R<span id="cart-total">0</span></h3>
+          <div class="checkout-field">
+            <label for="customer-email">Email</label>
+            <input id="customer-email" type="email" placeholder="Email address" />
+          </div>
 
-<button class="checkout-btn">Checkout</button>
-</div>
+          <div class="checkout-field">
+            <label for="customer-phone">Phone</label>
+            <input id="customer-phone" type="tel" placeholder="Phone number" />
+          </div>
 
-<script src="script.js"></script>
+          <div class="checkout-field full">
+            <label for="customer-address1">Address</label>
+            <input id="customer-address1" type="text" placeholder="Street address" />
+          </div>
 
+          <div class="checkout-field">
+            <label for="customer-city">City</label>
+            <input id="customer-city" type="text" placeholder="City" />
+          </div>
+
+          <div class="checkout-field">
+            <label for="customer-region">Province / Region</label>
+            <input id="customer-region" type="text" placeholder="Province / Region" />
+          </div>
+
+          <div class="checkout-field">
+            <label for="customer-zip">Postal code</label>
+            <input id="customer-zip" type="text" placeholder="Postal code" />
+          </div>
+
+          <div class="checkout-field">
+            <label for="customer-country">Country code</label>
+            <input id="customer-country" type="text" placeholder="ZA" value="ZA" />
+          </div>
+        </div>
+
+        <div class="promo-wrap">
+          <label for="promo-code">Promo code</label>
+          <div class="promo-row">
+            <input id="promo-code" type="text" placeholder="Enter promo code" />
+            <button type="button" class="secondary-btn" onclick="applyPromoCode()">Apply</button>
+          </div>
+          <p id="promo-message" class="promo-message"></p>
+        </div>
+
+        <form
+          id="payfast-form"
+          action="https://www.payfast.co.za/eng/process"
+          method="post"
+          onsubmit="return preparePayFastCheckout();"
+        >
+          <input type="hidden" name="merchant_id" value="YOUR_MERCHANT_ID" />
+          <input type="hidden" name="merchant_key" value="YOUR_MERCHANT_KEY" />
+          <input type="hidden" name="return_url" value="https://your-vercel-site.vercel.app/success.html" />
+          <input type="hidden" name="cancel_url" value="https://your-vercel-site.vercel.app/cancel.html" />
+          <input type="hidden" name="notify_url" value="https://your-vercel-site.vercel.app/api/payfast-notify" />
+
+          <input type="hidden" name="name_first" id="pf-name-first" />
+          <input type="hidden" name="name_last" id="pf-name-last" />
+          <input type="hidden" name="email_address" id="pf-email-address" />
+          <input type="hidden" name="m_payment_id" id="pf-payment-id" />
+          <input type="hidden" name="amount" id="pf-amount" />
+          <input type="hidden" name="item_name" id="pf-item-name" />
+
+          <input type="hidden" id="pf-product-id" />
+          <input type="hidden" id="pf-variant-id" />
+          <input type="hidden" id="pf-quantity" />
+
+          <input type="hidden" id="pf-address1" />
+          <input type="hidden" id="pf-city" />
+          <input type="hidden" id="pf-region" />
+          <input type="hidden" id="pf-zip" />
+          <input type="hidden" id="pf-country" />
+          <input type="hidden" id="pf-phone" />
+
+          <button type="submit" class="primary-btn checkout-submit">Continue to PayFast</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div id="overlay" class="overlay" onclick="closeCart()"></div>
+
+  <aside id="cart-panel" class="cart-panel">
+    <div class="cart-header">
+      <h4>Your Cart</h4>
+      <button class="close-cart" onclick="closeCart()">✕</button>
+    </div>
+
+    <div id="cart-items"></div>
+
+    <div class="cart-summary">
+      <p>Subtotal: <span id="cart-subtotal">R0.00</span></p>
+      <p>Discount: <span id="cart-discount">R0.00</span></p>
+      <p class="cart-total-line">Total: <span id="cart-total">R0.00</span></p>
+    </div>
+
+    <div class="cart-actions">
+      <a href="#checkout-section" class="primary-btn cart-checkout-link" onclick="closeCart()">Go to Checkout</a>
+    </div>
+  </aside>
+
+  <script src="script.js"></script>
 </body>
-</html>
+              </html>
