@@ -1,36 +1,38 @@
 /**
  * LUNARA - Official Store Script
- * Includes: Butterfly Animation, Printify Integration, Cart System, and PayFast Checkout
  */
 
-// 🦋 1. BUTTERFLY ANIMATION & INITIALIZATION
 document.addEventListener("DOMContentLoaded", () => {
-  const butterfly = document.getElementById('butterfly');
-  const introSeen = sessionStorage.getItem('lunara_butterfly_landed');
+    const butterfly = document.getElementById('butterfly');
+    const introScreen = document.getElementById('intro-screen');
+    const mainContent = document.getElementById('main-content');
+    const introSeen = sessionStorage.getItem('lunara_butterfly_landed');
 
-  if (butterfly) {
     if (!introSeen) {
-      // First time visit in this session: Play Animation
-      butterfly.classList.add('fluttering');
+        // First visit: Show animation
+        mainContent.style.opacity = "0";
+        butterfly.classList.add('fluttering');
 
-      // After 5 seconds, switch to resting state
-      setTimeout(() => {
-        butterfly.classList.remove('fluttering');
-        butterfly.classList.add('resting');
-        sessionStorage.setItem('lunara_butterfly_landed', 'true');
-      }, 5000);
+        setTimeout(() => {
+            // Fade out intro
+            introScreen.style.opacity = '0';
+            mainContent.style.opacity = '1';
+            
+            setTimeout(() => {
+                introScreen.style.display = 'none';
+                sessionStorage.setItem('lunara_butterfly_landed', 'true');
+            }, 1500);
+        }, 5000);
     } else {
-      // Returning in the same session: Butterfly is already on the moon
-      butterfly.classList.add('resting');
+        // Returning visit: Skip intro
+        introScreen.style.display = 'none';
+        mainContent.style.opacity = '1';
     }
-  }
 
-  // Load store data
-  loadProducts();
-  restorePromoUI();
+    loadProducts();
 });
 
-// 🛍️ 2. GLOBAL STORE STATE
+// 🛍️ STORE STATE
 let cart = JSON.parse(localStorage.getItem("lunaraCart")) || [];
 let activeCategory = "all";
 let storeProducts = [];
@@ -38,198 +40,111 @@ let appliedDiscountRate = Number(localStorage.getItem("lunaraDiscountRate")) || 
 let appliedPromoCode = localStorage.getItem("lunaraPromoCode") || "";
 
 const fallbackSizes = ["XS", "S", "M", "L", "XL"];
-const fallbackColors = ["black", "white"];
 
-// LOCAL CATALOG (Used as fallback if API fails)
+// LOCAL CATALOG
 const localCatalog = [
-  { slug: "lunar-hoodie", name: "Moon Phase Hoodie", category: "hoodie", images: { black: "images/hoodies/lunar-hoodie-black.png", white: "images/hoodies/lunar-hoodie-white.png" } },
-  { slug: "galaxy-hoodie", name: "Galaxy Crescent Hoodie", category: "hoodie", images: { black: "images/hoodies/galaxy-hoodie-black.png", white: "images/hoodies/galaxy-hoodie-white.png" } },
-  { slug: "butterfly-hoodie", name: "Butterfly Hoodie", category: "hoodie", images: { black: "images/hoodies/butterfly-hoodie-black.png", white: "images/hoodies/butterfly-hoodie-white.png" } },
-  { slug: "cosmic-eye-hoodie", name: "Cosmic Eye Hoodie", category: "hoodie", images: { black: "images/hoodies/cosmic-eye-hoodie-black.png", white: "images/hoodies/cosmic-eye-hoodie-white.png" } },
-  { slug: "butterfly-tee", name: "Butterfly Tee", category: "shirt", images: { black: "images/shirts/butterfly-tee-black.png", white: "images/shirts/butterfly-tee-white.png" } },
-  { slug: "cosmic-splash-tee", name: "Cosmic Splash Tee", category: "shirt", images: { black: "images/shirts/cosmic-tee-black.png", white: "images/shirts/cosmic-tee-white.png" } },
-  { slug: "moon-phase-pants", name: "Moon Phase Pants", category: "pants", images: { black: "images/pants/moon-phase-hippie-pants-black.png" } },
-  { slug: "cosmic-butterfly-pants", name: "Butterfly Galaxy Pants", category: "pants", images: { black: "images/pants/cosmic-butterfly-pants-black.png" } }
+    { id: "lunar-hoodie", name: "Moon Phase Hoodie", category: "hoodie", price: 1100, images: { black: "images/hoodies/lunar-hoodie-black.png" } },
+    { id: "butterfly-tee", name: "Butterfly Tee", category: "shirt", price: 450, images: { black: "images/shirts/butterfly-tee-black.png" } },
+    { id: "moon-pants", name: "Moon Phase Pants", category: "pants", price: 850, images: { black: "images/pants/moon-pants-black.png" } }
 ];
 
-const productsContainer = document.querySelector(".products");
-
-// 🛠️ 3. UTILITY FUNCTIONS
-function saveCart() { localStorage.setItem("lunaraCart", JSON.stringify(cart)); }
-function savePromoState() {
-  localStorage.setItem("lunaraDiscountRate", String(appliedDiscountRate));
-  localStorage.setItem("lunaraPromoCode", appliedPromoCode);
-}
-function formatColorName(color) { return color.charAt(0).toUpperCase() + color.slice(1); }
-function stripHtml(html = "") {
-  const temp = document.createElement("div");
-  temp.innerHTML = html;
-  return temp.textContent || temp.innerText || "";
-}
-function formatCurrency(amount) { return "R" + Number(amount || 0).toFixed(2); }
-
-// 📦 4. PRODUCT DISPLAY LOGIC
+// 🛠️ FUNCTIONS
 async function loadProducts() {
-  try {
-    const response = await fetch("/api/products");
-    if (!response.ok) throw new Error("API Offline");
-    const data = await response.json();
-    const apiProducts = Array.isArray(data.data) ? data.data : [];
-    storeProducts = apiProducts.map(normalizePrintifyProduct);
-  } catch (error) {
-    console.log("Loading local catalog...");
-    storeProducts = localCatalog.map(product => ({
-      id: product.slug,
-      name: product.name,
-      description: "Lunara statement piece designed to stand out.",
-      category: product.category,
-      price: product.category === "hoodie" ? 1100 : 450,
-      sizes: fallbackSizes,
-      images: product.images,
-      printifyProductId: "",
-      printifyVariantId: ""
-    }));
-  }
-  displayProducts(getDisplayedProducts());
-  setActiveFilterButton();
-  updateCart();
-}
-
-function normalizePrintifyProduct(apiProduct) {
-  const title = apiProduct.title || "Lunara Item";
-  const firstVar = apiProduct.variants?.[0];
-  return {
-    id: apiProduct.id,
-    name: title,
-    description: stripHtml(apiProduct.description),
-    category: title.toLowerCase().includes("hoodie") ? "hoodie" : title.toLowerCase().includes("pants") ? "pants" : "shirt",
-    price: firstVar ? (firstVar.price / 100) : 450,
-    sizes: fallbackSizes,
-    images: { black: apiProduct.images?.[0]?.src || "images/logo-small.png" },
-    printifyProductId: apiProduct.id,
-    printifyVariantId: firstVar?.id || ""
-  };
+    // Attempt Printify API first, otherwise use localCatalog
+    try {
+        const response = await fetch("/api/products");
+        if (!response.ok) throw new Error();
+        const data = await response.json();
+        storeProducts = data.data.map(p => ({
+            id: p.id,
+            name: p.title,
+            category: p.title.toLowerCase().includes("hoodie") ? "hoodie" : "shirt",
+            price: p.variants[0].price / 100,
+            sizes: fallbackSizes,
+            images: { black: p.images[0].src }
+        }));
+    } catch (e) {
+        storeProducts = localCatalog;
+    }
+    displayProducts(storeProducts);
+    updateCart();
 }
 
 function displayProducts(list) {
-  if (!productsContainer) return;
-  productsContainer.innerHTML = list.map((product, index) => `
-    <div class="product-card">
-      <div class="product-image-wrap">
-        <img id="img-${index}" src="${product.images.black}" alt="${product.name}" class="product-image">
-      </div>
-      <div class="product-info">
-        <p class="product-type">${product.category}</p>
-        <h4>${product.name}</h4>
-        <p class="product-price">${formatCurrency(product.price)}</p>
-        <div class="product-options">
-          <select id="size-${index}">${product.sizes.map(s => `<option value="${s}">${s}</option>`).join("")}</select>
-          <select id="color-${index}" onchange="changeColor(${index})">
-            ${Object.keys(product.images).map(c => `<option value="${c}">${formatColorName(c)}</option>`).join("")}
-          </select>
+    const container = document.querySelector(".products");
+    if (!container) return;
+
+    const filtered = activeCategory === "all" ? list : list.filter(p => p.category === activeCategory);
+    
+    container.innerHTML = filtered.map((p, i) => `
+        <div class="product-card">
+            <div class="product-image-wrap">
+                <img src="${p.images.black}" alt="${p.name}" class="product-image">
+            </div>
+            <div class="product-info">
+                <p class="product-type">${p.category}</p>
+                <h4>${p.name}</h4>
+                <p class="product-price">R${p.price.toFixed(2)}</p>
+                <div class="product-options">
+                    <select id="size-${i}">${p.sizes.map(s => `<option>${s}</option>`).join("")}</select>
+                </div>
+                <button onclick="addToCart(${i})">Add to Cart</button>
+            </div>
         </div>
-        <button onclick="addToCart(${index})">Add to Cart</button>
-      </div>
-    </div>
-  `).join("");
+    `).join("");
 }
 
-// 🛒 5. CART & CHECKOUT LOGIC
-window.filterProducts = function(category) {
-  activeCategory = category;
-  displayProducts(getDisplayedProducts());
-  setActiveFilterButton();
+window.filterProducts = (cat) => {
+    activeCategory = cat;
+    displayProducts(storeProducts);
+    document.querySelectorAll('.filters button').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText.toLowerCase() === cat || (cat === 'all' && btn.innerText === 'All'));
+    });
 };
 
-function getDisplayedProducts() {
-  return activeCategory === "all" ? storeProducts : storeProducts.filter(p => p.category === activeCategory);
-}
-
-window.changeColor = function(index) {
-  const product = getDisplayedProducts()[index];
-  const color = document.getElementById(`color-${index}`).value;
-  document.getElementById(`img-${index}`).src = product.images[color];
+window.addToCart = (index) => {
+    const p = storeProducts[index];
+    const size = document.getElementById(`size-${index}`).value;
+    cart.push({ ...p, size, quantity: 1 });
+    updateCart();
+    openCart();
 };
 
-window.addToCart = function(index) {
-  const product = getDisplayedProducts()[index];
-  const size = document.getElementById(`size-${index}`).value;
-  const color = document.getElementById(`color-${index}`).value;
+window.updateCart = () => {
+    const itemsDiv = document.getElementById("cart-items");
+    itemsDiv.innerHTML = cart.map((item, i) => `
+        <div class="cart-item">
+            <div><h5>${item.name}</h5><p>${item.size}</p></div>
+            <button onclick="removeFromCart(${i})">Remove</button>
+        </div>
+    `).join("") || '<p class="empty-cart">Empty</p>';
 
-  const existing = cart.find(item => item.id === product.id && item.size === size && item.color === color);
-  if (existing) { existing.quantity++; } 
-  else {
-    cart.push({ ...product, size, color: formatColorName(color), quantity: 1 });
-  }
-  updateCart();
-  openCart();
+    const subtotal = cart.reduce((s, i) => s + i.price, 0);
+    document.getElementById("cart-count").innerText = cart.length;
+    document.getElementById("cart-subtotal").innerText = `R${subtotal.toFixed(2)}`;
+    document.getElementById("cart-total").innerText = `R${(subtotal * (1 - appliedDiscountRate)).toFixed(2)}`;
+    localStorage.setItem("lunaraCart", JSON.stringify(cart));
 };
 
-window.updateCart = function() {
-  const itemsDiv = document.getElementById("cart-items");
-  if (!itemsDiv) return;
+window.removeFromCart = (i) => { cart.splice(i, 1); updateCart(); };
+window.openCart = () => { document.getElementById("cart-panel").classList.add("open"); document.getElementById("overlay").classList.add("show"); };
+window.closeCart = () => { document.getElementById("cart-panel").classList.remove("open"); document.getElementById("overlay").classList.remove("show"); };
 
-  itemsDiv.innerHTML = cart.map((item, i) => `
-    <div class="cart-item">
-      <div><h5>${item.name}</h5><p>${item.size} | ${item.color} (x${item.quantity})</p></div>
-      <div><strong>${formatCurrency(item.price * item.quantity)}</strong><br>
-      <button onclick="removeFromCart(${i})">Remove</button></div>
-    </div>
-  `).join("") || '<p class="empty-cart">Your cart is empty.</p>';
-
-  const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-  const discount = subtotal * appliedDiscountRate;
-  
-  document.getElementById("cart-count").innerText = cart.reduce((s, i) => s + i.quantity, 0);
-  document.getElementById("cart-subtotal").innerText = formatCurrency(subtotal);
-  document.getElementById("cart-discount").innerText = "-" + formatCurrency(discount);
-  document.getElementById("cart-total").innerText = formatCurrency(subtotal - discount);
-  saveCart();
+window.applyPromoCode = () => {
+    const code = document.getElementById("promo-code").value.toUpperCase();
+    if (code === "LUNARA15") {
+        appliedDiscountRate = 0.15;
+        document.getElementById("promo-message").innerText = "15% Discount Applied!";
+        updateCart();
+    }
 };
 
-window.removeFromCart = function(i) { cart.splice(i, 1); updateCart(); };
-window.openCart = function() { document.getElementById("cart-panel").classList.add("open"); document.getElementById("overlay").classList.add("show"); };
-window.closeCart = function() { document.getElementById("cart-panel").classList.remove("open"); document.getElementById("overlay").classList.remove("show"); };
-
-window.applyPromoCode = function() {
-  const code = document.getElementById("promo-code").value.trim().toUpperCase();
-  if (code === "LUNARA15") {
-    appliedDiscountRate = 0.15;
-    appliedPromoCode = code;
-    document.getElementById("promo-message").textContent = "15% discount applied!";
-  } else {
-    alert("Invalid Code");
-  }
-  savePromoState();
-  updateCart();
-};
-
-function restorePromoUI() {
-  if (appliedPromoCode) {
-    document.getElementById("promo-code").value = appliedPromoCode;
-    document.getElementById("promo-message").textContent = appliedPromoCode + " applied.";
-  }
-}
-
-function setActiveFilterButton() {
-  document.querySelectorAll(".filters button").forEach(btn => {
-    btn.classList.toggle("active", btn.innerText.toLowerCase() === activeCategory || (activeCategory === 'all' && btn.innerText.toLowerCase() === 'all'));
-  });
-}
-
-// 💳 6. PAYFAST PREPARATION
-window.preparePayFastCheckout = function() {
-  if (cart.length === 0) return false;
-  
-  const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-  const total = subtotal - (subtotal * appliedDiscountRate);
-
-  document.getElementById("pf-name-first").value = document.getElementById("customer-first-name").value;
-  document.getElementById("pf-name-last").value = document.getElementById("customer-last-name").value;
-  document.getElementById("pf-email-address").value = document.getElementById("customer-email").value;
-  document.getElementById("pf-amount").value = total.toFixed(2);
-  document.getElementById("pf-item-name").value = cart.map(i => i.name).join(", ");
-  document.getElementById("pf-payment-id").value = "LUNARA-" + Date.now();
-
-  return true;
+window.preparePayFastCheckout = () => {
+    const subtotal = cart.reduce((s, i) => s + i.price, 0);
+    document.getElementById("pf-amount").value = (subtotal * (1 - appliedDiscountRate)).toFixed(2);
+    document.getElementById("pf-item-name").value = cart.map(i => i.name).join(", ");
+    document.getElementById("pf-name-first").value = document.getElementById("customer-first-name").value;
+    document.getElementById("pf-email-address").value = document.getElementById("customer-email").value;
+    document.getElementById("pf-payment-id").value = "LUNARA-" + Date.now();
+    return true;
 };
