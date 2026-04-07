@@ -1,150 +1,113 @@
-/**
- * LUNARA - Official Store Script
- */
-
-document.addEventListener("DOMContentLoaded", () => {
-    const butterfly = document.getElementById('butterfly');
-    const introScreen = document.getElementById('intro-screen');
-    const mainContent = document.getElementById('main-content');
-    const introSeen = sessionStorage.getItem('lunara_butterfly_landed');
-
-    if (!introSeen) {
-        // First visit: Show animation
-        mainContent.style.opacity = "0";
-        butterfly.classList.add('fluttering');
-
-        setTimeout(() => {
-            // Fade out intro
-            introScreen.style.opacity = '0';
-            mainContent.style.opacity = '1';
-            
-            setTimeout(() => {
-                introScreen.style.display = 'none';
-                sessionStorage.setItem('lunara_butterfly_landed', 'true');
-            }, 1500);
-        }, 5000);
-    } else {
-        // Returning visit: Skip intro
-        introScreen.style.display = 'none';
-        mainContent.style.opacity = '1';
-    }
-
-    loadProducts();
-});
-
-// 🛍️ STORE STATE
-let cart = JSON.parse(localStorage.getItem("lunaraCart")) || [];
-let activeCategory = "all";
-let storeProducts = [];
-let appliedDiscountRate = Number(localStorage.getItem("lunaraDiscountRate")) || 0;
-let appliedPromoCode = localStorage.getItem("lunaraPromoCode") || "";
-
-const fallbackSizes = ["XS", "S", "M", "L", "XL"];
-
-// LOCAL CATALOG
-const localCatalog = [
-    { id: "lunar-hoodie", name: "Moon Phase Hoodie", category: "hoodie", price: 1100, images: { black: "images/hoodies/lunar-hoodie-black.png" } },
-    { id: "butterfly-tee", name: "Butterfly Tee", category: "shirt", price: 450, images: { black: "images/shirts/butterfly-tee-black.png" } },
-    { id: "moon-pants", name: "Moon Phase Pants", category: "pants", price: 850, images: { black: "images/pants/moon-pants-black.png" } }
+let products = [
+{
+name: "Lunar Oversized Hoodie",
+price: 850,
+image: "images/hoodie1.png",
+category: "hoodie"
+},
+{
+name: "Cosmic Butterfly Tee",
+price: 450,
+image: "images/shirt1.png",
+category: "shirt"
+},
+{
+name: "Trippy Pants",
+price: 650,
+image: "images/pants1.png",
+category: "pants"
+}
 ];
 
-// 🛠️ FUNCTIONS
-async function loadProducts() {
-    // Attempt Printify API first, otherwise use localCatalog
-    try {
-        const response = await fetch("/api/products");
-        if (!response.ok) throw new Error();
-        const data = await response.json();
-        storeProducts = data.data.map(p => ({
-            id: p.id,
-            name: p.title,
-            category: p.title.toLowerCase().includes("hoodie") ? "hoodie" : "shirt",
-            price: p.variants[0].price / 100,
-            sizes: fallbackSizes,
-            images: { black: p.images[0].src }
-        }));
-    } catch (e) {
-        storeProducts = localCatalog;
-    }
-    displayProducts(storeProducts);
-    updateCart();
+let cart = [];
+let favorites = [];
+let discount = 0;
+
+/* LOAD PRODUCTS */
+function displayProducts(list){
+let container = document.querySelector(".products");
+container.innerHTML = "";
+
+list.forEach((p,i)=>{
+container.innerHTML += `
+<div class="product">
+
+<div class="favorite ${favorites.includes(i) ? "active" : ""}" onclick="toggleFavorite(${i})">
+🦋
+</div>
+
+<img src="${p.image}">
+<h3>${p.name}</h3>
+<p class="price">R${p.price}</p>
+
+<button onclick="addToCart(${i})">Add to Cart</button>
+
+</div>
+`;
+});
 }
 
-function displayProducts(list) {
-    const container = document.querySelector(".products");
-    if (!container) return;
-
-    const filtered = activeCategory === "all" ? list : list.filter(p => p.category === activeCategory);
-    
-    container.innerHTML = filtered.map((p, i) => `
-        <div class="product-card">
-            <div class="product-image-wrap">
-                <img src="${p.images.black}" alt="${p.name}" class="product-image">
-            </div>
-            <div class="product-info">
-                <p class="product-type">${p.category}</p>
-                <h4>${p.name}</h4>
-                <p class="product-price">R${p.price.toFixed(2)}</p>
-                <div class="product-options">
-                    <select id="size-${i}">${p.sizes.map(s => `<option>${s}</option>`).join("")}</select>
-                </div>
-                <button onclick="addToCart(${i})">Add to Cart</button>
-            </div>
-        </div>
-    `).join("");
+/* FILTER */
+function filterProducts(category){
+if(category === "all"){
+displayProducts(products);
+}else{
+displayProducts(products.filter(p=>p.category===category));
+}
 }
 
-window.filterProducts = (cat) => {
-    activeCategory = cat;
-    displayProducts(storeProducts);
-    document.querySelectorAll('.filters button').forEach(btn => {
-        btn.classList.toggle('active', btn.innerText.toLowerCase() === cat || (cat === 'all' && btn.innerText === 'All'));
-    });
-};
+/* CART */
+function addToCart(index){
+cart.push(products[index]);
+updateCart();
+}
 
-window.addToCart = (index) => {
-    const p = storeProducts[index];
-    const size = document.getElementById(`size-${index}`).value;
-    cart.push({ ...p, size, quantity: 1 });
-    updateCart();
-    openCart();
-};
+function updateCart(){
+document.getElementById("cart-count").innerText = cart.length;
 
-window.updateCart = () => {
-    const itemsDiv = document.getElementById("cart-items");
-    itemsDiv.innerHTML = cart.map((item, i) => `
-        <div class="cart-item">
-            <div><h5>${item.name}</h5><p>${item.size}</p></div>
-            <button onclick="removeFromCart(${i})">Remove</button>
-        </div>
-    `).join("") || '<p class="empty-cart">Empty</p>';
+let itemsHTML = "";
+let total = 0;
 
-    const subtotal = cart.reduce((s, i) => s + i.price, 0);
-    document.getElementById("cart-count").innerText = cart.length;
-    document.getElementById("cart-subtotal").innerText = `R${subtotal.toFixed(2)}`;
-    document.getElementById("cart-total").innerText = `R${(subtotal * (1 - appliedDiscountRate)).toFixed(2)}`;
-    localStorage.setItem("lunaraCart", JSON.stringify(cart));
-};
+cart.forEach(item=>{
+total += item.price;
+itemsHTML += `<p>${item.name} - R${item.price}</p>`;
+});
 
-window.removeFromCart = (i) => { cart.splice(i, 1); updateCart(); };
-window.openCart = () => { document.getElementById("cart-panel").classList.add("open"); document.getElementById("overlay").classList.add("show"); };
-window.closeCart = () => { document.getElementById("cart-panel").classList.remove("open"); document.getElementById("overlay").classList.remove("show"); };
+total = total - (total * discount);
 
-window.applyPromoCode = () => {
-    const code = document.getElementById("promo-code").value.toUpperCase();
-    if (code === "LUNARA15") {
-        appliedDiscountRate = 0.15;
-        document.getElementById("promo-message").innerText = "15% Discount Applied!";
-        updateCart();
-    }
-};
+document.getElementById("cart-items").innerHTML = itemsHTML;
+document.getElementById("cart-total").innerText = total.toFixed(0);
+}
 
-window.preparePayFastCheckout = () => {
-    const subtotal = cart.reduce((s, i) => s + i.price, 0);
-    document.getElementById("pf-amount").value = (subtotal * (1 - appliedDiscountRate)).toFixed(2);
-    document.getElementById("pf-item-name").value = cart.map(i => i.name).join(", ");
-    document.getElementById("pf-name-first").value = document.getElementById("customer-first-name").value;
-    document.getElementById("pf-email-address").value = document.getElementById("customer-email").value;
-    document.getElementById("pf-payment-id").value = "LUNARA-" + Date.now();
-    return true;
-};
+/* CART PANEL */
+function toggleCart(){
+document.getElementById("cart-panel").classList.toggle("open");
+}
+
+/* FAVORITES */
+function toggleFavorite(index){
+if(favorites.includes(index)){
+favorites = favorites.filter(i=>i!==index);
+}else{
+favorites.push(index);
+}
+displayProducts(products);
+}
+
+/* PROMO */
+function applyPromo(){
+let code = document.getElementById("promo-input").value;
+
+if(code === "LUNARA15"){
+discount = 0.15;
+document.getElementById("discount-msg").innerText = "15% applied";
+}else{
+discount = 0;
+document.getElementById("discount-msg").innerText = "Invalid code";
+}
+
+updateCart();
+}
+
+/* INIT */
+displayProducts(products);
