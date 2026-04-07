@@ -768,3 +768,122 @@ body {
   0% { opacity: 1; transform: scale(1); }
   100% { opacity: 0; transform: scale(0); }
 }
+/* ============================= */
+/* 🎬 INTRO SCREEN (FULLSCREEN) */
+/* ============================= */
+.intro-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: radial-gradient(circle at center, #050510, #000);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 1.5s ease;
+}
+
+.intro-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Hide site initially */
+.main-content {
+  opacity: 0;
+  transition: opacity 1.5s ease;
+}
+
+.show-site {
+  opacity: 1;
+}
+
+/* ============================= */
+/* ✨ CINEMATIC LOGO */
+/* ============================= */
+.lunara-intro {
+  position: relative;
+  width: 320px;
+}
+
+.moon {
+  width: 100%;
+  animation: moonGlow 3s ease-in-out infinite alternate;
+}
+
+.butterfly {
+  position: absolute;
+  width: 110px;
+  top: -200px;
+  left: -150px;
+  opacity: 0;
+  animation: cinematicFly 4s ease-out forwards;
+  filter: drop-shadow(0 0 15px #8be9ff);
+}
+
+/* Butterfly motion */
+@keyframes cinematicFly {
+  0% {
+    transform: translate(-300px, -300px) rotate(-40deg) scale(0.5);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+    transform: translate(60px, 20px) rotate(25deg) scale(1.1);
+  }
+  60% {
+    transform: translate(120px, 60px) rotate(-10deg);
+  }
+  100% {
+    transform: translate(150px, 80px) rotate(0deg) scale(1);
+  }
+}
+
+/* Glow */
+@keyframes moonGlow {
+  0% { filter: drop-shadow(0 0 5px #6cf); }
+  100% { filter: drop-shadow(0 0 25px #b3f0ff); }
+}
+
+/* ============================= */
+/* ✨ SPARKLES */
+/* ============================= */
+.sparkle {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #8be9ff, 0 0 20px #8be9ff;
+  animation: sparkleFade 1s linear forwards;
+}
+
+@keyframes sparkleFade {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0); }
+}
+
+/* ============================= */
+/* 💰 SALES OPTIMIZATION */
+/* ============================= */
+.stock-warning {
+  color: #ff4d4d;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.viewing-now {
+  color: #9be2ff;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+#upsell-message {
+  margin-top: 12px;
+  font-weight: bold;
+  color: #9be2ff;
+  text-align: center;
+}
