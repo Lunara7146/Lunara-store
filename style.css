@@ -142,29 +142,104 @@ button, input { font: inherit; }
 }
 
 /* --- HERO --- */
-.hero {
-  margin: 30px auto;
+/* --- GLOBAL IMAGE FIX --- */
+img {
+  display: block;
+}
+
+/* --- FONTS --- */
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* --- HEADER --- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(12px);
+  background: rgba(7,7,11,0.88);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  transition: all 0.3s ease;
+}
+
+.header-inner {
   width: min(1240px, calc(100% - 32px));
-  min-height: 560px;
-  border-radius: 32px;
-  overflow: hidden;
-  position: relative;
-  background: #0c0c14;
-}
-
-.centered-hero-content {
-  text-align: center;
-  padding: 90px 34px;
-}
-
-.hero h2 {
-  font-size: clamp(42px,6vw,82px);
-}
-
-.hero-copy {
-  color: var(--muted);
-  max-width: 600px;
   margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 14px 0;
+}
+
+/* BRAND */
+.brand-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-center h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  margin: 0;
+  letter-spacing: 2px;
+  transition: 0.3s;
+}
+
+/* Logo */
+.logo-inline {
+  height: 22px;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 0 6px rgba(126, 231, 255, 0.4));
+}
+
+/* Hover effects */
+.logo-inline:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 12px rgba(185, 140, 255, 0.8));
+}
+
+.brand-center:hover h1 {
+  letter-spacing: 3px;
+  color: #b98cff;
+}
+
+/* RIGHT SIDE */
+.header-right {
+  position: absolute;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.main-nav {
+  display: flex;
+  gap: 18px;
+}
+
+.cart-btn {
+  border: 1px solid rgba(255,255,255,0.1);
+  background: linear-gradient(135deg, rgba(185,140,255,0.18), rgba(126,231,255,0.12));
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+/* SHRINK ON SCROLL */
+.site-header.shrink {
+  padding: 6px 0;
+  background: rgba(7,7,11,0.95);
+}
+
+.site-header.shrink .logo-inline {
+  height: 18px;
+}
+
+.site-header.shrink .brand-center h1 {
+  font-size: 16px;
 }
 
 /* CTA + trust */
