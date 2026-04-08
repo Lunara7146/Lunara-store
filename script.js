@@ -1,87 +1,113 @@
-// --- STATE ---
+// =========================
+// STATE
+// =========================
 let cart = JSON.parse(localStorage.getItem("lunaraCart")) || [];
-let activeCategory = "all";
-let storeProducts = [];
 let favorites = JSON.parse(localStorage.getItem("lunaraFavorites")) || [];
+let storeProducts = [];
 
-// --- CONSTANTS ---
-const fallbackSizes = ["XS", "S", "M", "L", "XL"];
-const productsContainer = document.querySelector(".products");
-
-// --- HELPERS ---
+// =========================
+// HELPERS
+// =========================
 function saveCart() {
   localStorage.setItem("lunaraCart", JSON.stringify(cart));
+}
+
+function saveFavorites() {
+  localStorage.setItem("lunaraFavorites", JSON.stringify(favorites));
 }
 
 function formatCurrency(amount) {
   return "R" + Number(amount || 0).toFixed(2);
 }
 
-function generateStock() {
-  return Math.floor(Math.random() * 8) + 3;
-}
+// =========================
+// LOAD PRODUCTS (PRINTIFY)
+// =========================
+async function loadProducts() {
+  try {
+    const res = await fetch("/api/products");
+    const data = await res.json();
 
-function getDisplayedProducts() {
-  if (activeCategory === "all") return storeProducts;
-  if (activeCategory === "favorites") {
-    return storeProducts.filter(p => favorites.includes(p.id));
+    // IMPORTANT: backend already formatted
+    storeProducts = data;
+
+    displayProducts(storeProducts);
+    updateCart();
+  } catch (err) {
+    console.error("❌ Failed to load products:", err);
   }
-  return storeProducts.filter(p => p.category === activeCategory);
 }
 
-// --- DISPLAY PRODUCTS ---
-function displayProducts(list) {
-  productsContainer.innerHTML = "";
+// =========================
+// DISPLAY PRODUCTS
+// =========================
+function displayProducts(products) {
+  const container = document.querySelector(".products");
+  container.innerHTML = "";
 
-  if (!list.length) {
-    productsContainer.innerHTML = `<p>No products found.</p>`;
+  if (!products.length) {
+    container.innerHTML = "<p>No products found.</p>";
     return;
   }
 
-  list.forEach((product, index) => {
-    const stock = generateStock();
+  products.forEach((product, index) => {
+    const isFav = favorites.includes(product.id);
 
     const div = document.createElement("div");
     div.className = "product-card";
 
     div.innerHTML = `
-      <img src="${product.images.black}" class="product-image">
+      <div class="product-image-wrap">
+        <img src="${product.images.black}" class="product-image">
+      </div>
+
       <div class="product-info">
         <h4>${product.name}</h4>
         <p class="product-price">${formatCurrency(product.price)}</p>
-        <p>Only ${stock} left</p>
 
-        <select id="size-${index}">
-          ${fallbackSizes.map(s => `<option>${s}</option>`).join("")}
-        </select>
+        <span class="wishlist-btn" onclick="toggleFavorite('${product.id}')">
+          ${isFav ? "💜" : "🦋"}
+        </span>
 
-        <button onclick="addToCart(${index}, event)">Add to Cart</button>
+        <button onclick="addToCart(${index}, event)">
+          Add to Cart
+        </button>
       </div>
     `;
 
-    productsContainer.appendChild(div);
+    container.appendChild(div);
   });
 }
 
-// --- CART ---
+// =========================
+// FAVORITES (WISHLIST)
+// =========================
+function toggleFavorite(id) {
+  if (favorites.includes(id)) {
+    favorites = favorites.filter(f => f !== id);
+  } else {
+    favorites.push(id);
+  }
+
+  saveFavorites();
+  displayProducts(storeProducts);
+}
+
+// =========================
+// ADD TO CART
+// =========================
 function addToCart(index, event) {
-  const product = getDisplayedProducts()[index];
-  if (!product) return;
+  const product = storeProducts[index];
 
-  const size = document.getElementById(`size-${index}`).value;
+  const existingItem = cart.find(item => item.id === product.id);
 
-  const existing = cart.find(item =>
-    item.id === product.id && item.size === size
-  );
-
-  if (existing) {
-    existing.quantity++;
+  if (existingItem) {
+    existingItem.quantity += 1;
   } else {
     cart.push({
       id: product.id,
       name: product.name,
       price: product.price,
-      size,
       quantity: 1
     });
   }
@@ -90,48 +116,72 @@ function addToCart(index, event) {
   updateCart();
   openCart();
 
+  // Button feedback
   if (event?.target) {
     const btn = event.target;
     btn.innerText = "Added ✓";
-    setTimeout(() => (btn.innerText = "Add to Cart"), 1000);
+    setTimeout(() => {
+      btn.innerText = "Add to Cart";
+    }, 1000);
   }
 }
 
+// =========================
+// CART LOGIC
+// =========================
 function updateCart() {
   saveCart();
 
-  const items = document.getElementById("cart-items");
-  if (!items) return;
+  const itemsContainer = document.getElementById("cart-items");
+  if (!itemsContainer) return;
 
-  items.innerHTML = "";
+  itemsContainer.innerHTML = "";
 
   if (!cart.length) {
-    items.innerHTML = `<p>Your cart is empty.</p>`;
+    itemsContainer.innerHTML = "<p>Your cart is empty.</p>";
+    document.getElementById("cart-total").innerText = "R0.00";
+    document.getElementById("cart-count").innerText = "0";
     return;
   }
 
-  cart.forEach((item, i) => {
+  let total = 0;
+
+  cart.forEach((item, index) => {
+    total += item.price * item.quantity;
+
     const row = document.createElement("div");
+    row.className = "cart-item";
+
     row.innerHTML = `
-      <p>${item.name} (${item.size}) x${item.quantity}</p>
-      <p>${formatCurrency(item.price * item.quantity)}</p>
-      <button onclick="removeFromCart(${i})">Remove</button>
+      <div>
+        <h5>${item.name}</h5>
+        <p>Qty: ${item.quantity}</p>
+      </div>
+      <div>
+        <strong>${formatCurrency(item.price * item.quantity)}</strong>
+        <br>
+        <button onclick="removeFromCart(${index})">Remove</button>
+      </div>
     `;
-    items.appendChild(row);
+
+    itemsContainer.appendChild(row);
   });
 
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   document.getElementById("cart-total").innerText = formatCurrency(total);
-
   document.getElementById("cart-count").innerText = cart.length;
 }
 
-function removeFromCart(i) {
-  cart.splice(i, 1);
+// =========================
+// REMOVE FROM CART
+// =========================
+function removeFromCart(index) {
+  cart.splice(index, 1);
   updateCart();
 }
 
-// --- CART UI ---
+// =========================
+// CART UI
+// =========================
 function openCart() {
   document.getElementById("cart-panel")?.classList.add("open");
 }
@@ -140,32 +190,12 @@ function closeCart() {
   document.getElementById("cart-panel")?.classList.remove("open");
 }
 
-// --- LOAD PRODUCTS (TEMP LOCAL) ---
-function loadProducts() {
-  storeProducts = [
-    {
-      id: "1",
-      name: "Moon Phase Hoodie",
-      category: "hoodie",
-      price: 399,
-      images: { black: "images/hoodies/lunar-hoodie-black.png" }
-    },
-    {
-      id: "2",
-      name: "Butterfly Tee",
-      category: "shirt",
-      price: 249,
-      images: { black: "images/shirts/butterfly-tee-black.png" }
-    }
-  ];
-
-  displayProducts(getDisplayedProducts());
-  updateCart();
-}
-
-// --- HEADER SHRINK ---
+// =========================
+// HEADER SHRINK ON SCROLL
+// =========================
 window.addEventListener("scroll", () => {
   const header = document.querySelector(".site-header");
+
   if (window.scrollY > 50) {
     header.classList.add("shrink");
   } else {
@@ -173,6 +203,8 @@ window.addEventListener("scroll", () => {
   }
 });
 
-// --- INIT ---
+// =========================
+// INIT
+// =========================
 loadProducts();
 updateCart();
