@@ -26,6 +26,7 @@ function generateSignature(data, passphrase = "") {
 }
 
 export default async function handler(req, res) {
+
   if (req.method !== "POST") {
     return res.status(405).send("Method not allowed");
   }
@@ -34,77 +35,80 @@ export default async function handler(req, res) {
     const body = req.body || {};
     const passphrase = process.env.PAYFAST_PASSPHRASE || "";
 
-    const receivedSignature = String(body.signature || "").trim().toLowerCase();
+    // 🔐 VERIFY SIGNATURE
+    const receivedSignature = String(body.signature || "").toLowerCase();
     const expectedSignature = generateSignature(body, passphrase).toLowerCase();
 
     if (!receivedSignature || receivedSignature !== expectedSignature) {
       return res.status(400).send("Invalid signature");
     }
 
+    // ✅ ONLY PROCESS SUCCESSFUL PAYMENTS
     if (body.payment_status !== "COMPLETE") {
       return res.status(200).send("Ignored");
     }
 
-    const externalId = body.m_payment_id || `LUNARA-${Date.now()}`;
-    const productId = body.custom_str1 || "";
-    const variantId = body.custom_str2 || "";
-    const quantity = Number(body.custom_int1 || 1);
-
-    const firstName = body.name_first || "Customer";
-    const lastName = body.name_last || "Lunara";
-    const email = body.email_address || "";
-    const phone = body.custom_str8 || "";
-    const address1 = body.custom_str3 || "";
-    const city = body.custom_str4 || "";
-    const region = body.custom_str5 || "";
-    const zip = body.custom_str6 || "";
-    const country = body.custom_str7 || "ZA";
-
-    if (!productId || !variantId) {
-      return res.status(400).send("Missing product mapping");
+    // 🛒 PARSE FULL CART
+    let cartItems = [];
+    try {
+      cartItems = JSON.parse(body.custom_str1 || "[]");
+    } catch {
+      return res.status(400).send("Invalid cart data");
     }
 
+    if (!cartItems.length) {
+      return res.status(400).send("Empty cart");
+    }
+
+    // 🔥 CONVERT TO PRINTIFY FORMAT
+    const lineItems = cartItems.map(item => ({
+      product_id: item.productId,
+      variant_id: Number(item.variantId),
+      quantity: Number(item.quantity || 1)
+    }));
+
+    // 🚚 SHIPPING DETAILS
     const orderPayload = {
-      external_id: externalId,
-      line_items: [
-        {
-          product_id: productId,
-          variant_id: Number(variantId),
-          quantity
-        }
-      ],
+      external_id: body.m_payment_id || `LUNARA-${Date.now()}`,
+
+      line_items: lineItems,
+
       address_to: {
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        phone,
-        country,
-        region,
-        address1,
-        city,
-        zip
+        first_name: body.name_first || "Customer",
+        last_name: body.name_last || "Lunara",
+        email: body.email_address || "",
+        phone: body.custom_str8 || "",
+        country: body.custom_str7 || "ZA",
+        region: body.custom_str5 || "",
+        address1: body.custom_str3 || "",
+        city: body.custom_str4 || "",
+        zip: body.custom_str6 || ""
       },
+
       shipping_method: 1,
-      send_shipping_notification: false
+      send_shipping_notification: true
     };
 
-    const baseUrl =
-      process.env.BASE_URL || "https://lunara-store-tau.vercel.app";
-
-    const response = await fetch(`${baseUrl}/api/printify-orders`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(orderPayload)
-    });
+    // 🚀 SEND DIRECTLY TO PRINTIFY
+    const response = await fetch(
+      `https://api.printify.com/v1/shops/${process.env.PRINTIFY_SHOP_ID}/orders.json`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.PRINTIFY_API_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(orderPayload)
+      }
+    );
 
     if (!response.ok) {
-      const text = await response.text();
-      return res.status(500).send(`Printify order failed: ${text}`);
+      const errorText = await response.text();
+      return res.status(500).send(`Printify error: ${errorText}`);
     }
 
-    return res.status(200).send("OK");
+    return res.status(200).send("Order created");
+
   } catch (error) {
     return res.status(500).send(`Server error: ${error.message}`);
   }
