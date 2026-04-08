@@ -3,16 +3,9 @@ let cart = JSON.parse(localStorage.getItem("lunaraCart")) || [];
 let activeCategory = "all";
 let storeProducts = [];
 let favorites = JSON.parse(localStorage.getItem("lunaraFavorites")) || [];
-let appliedPromo = null;
 
 // --- CONSTANTS ---
 const fallbackSizes = ["XS", "S", "M", "L", "XL"];
-const fallbackColors = ["black", "white"];
-
-const promoCodes = {
-  LUNARA15: { code: "LUNARA15", type: "percent", value: 15, label: "15% off" }
-};
-
 const productsContainer = document.querySelector(".products");
 
 // --- HELPERS ---
@@ -24,12 +17,8 @@ function formatCurrency(amount) {
   return "R" + Number(amount || 0).toFixed(2);
 }
 
-function formatColorName(color) {
-  return color.charAt(0).toUpperCase() + color.slice(1);
-}
-
 function generateStock() {
-  return Math.floor(Math.random() * 8) + 3; // FOMO: 3–10 left
+  return Math.floor(Math.random() * 8) + 3;
 }
 
 function getDisplayedProducts() {
@@ -45,27 +34,22 @@ function displayProducts(list) {
   productsContainer.innerHTML = "";
 
   if (!list.length) {
-    productsContainer.innerHTML = `<p class="empty-cart">No products found.</p>`;
+    productsContainer.innerHTML = `<p>No products found.</p>`;
     return;
   }
 
   list.forEach((product, index) => {
     const stock = generateStock();
-    const fakeReviews = Math.floor(Math.random() * 2000) + 500;
 
     const div = document.createElement("div");
     div.className = "product-card";
 
     div.innerHTML = `
-      <div class="product-image-wrap">
-        <img src="${product.images.black}" class="product-image">
-      </div>
-
+      <img src="${product.images.black}" class="product-image">
       <div class="product-info">
         <h4>${product.name}</h4>
         <p class="product-price">${formatCurrency(product.price)}</p>
-        <p class="product-stock">Only ${stock} left</p>
-        <p class="product-reviews">★★★★★ (${fakeReviews})</p>
+        <p>Only ${stock} left</p>
 
         <select id="size-${index}">
           ${fallbackSizes.map(s => `<option>${s}</option>`).join("")}
@@ -79,19 +63,19 @@ function displayProducts(list) {
   });
 }
 
-// --- ADD TO CART (OPTIMIZED) ---
+// --- CART ---
 function addToCart(index, event) {
   const product = getDisplayedProducts()[index];
   if (!product) return;
 
-  const size = document.getElementById(`size-${index}`)?.value || "M";
+  const size = document.getElementById(`size-${index}`).value;
 
-  const existingItem = cart.find(item =>
+  const existing = cart.find(item =>
     item.id === product.id && item.size === size
   );
 
-  if (existingItem) {
-    existingItem.quantity += 1;
+  if (existing) {
+    existing.quantity++;
   } else {
     cart.push({
       id: product.id,
@@ -106,21 +90,11 @@ function addToCart(index, event) {
   updateCart();
   openCart();
 
-  // 🔥 Button feedback
   if (event?.target) {
     const btn = event.target;
     btn.innerText = "Added ✓";
-    btn.style.background = "var(--success)";
-    setTimeout(() => {
-      btn.innerText = "Add to Cart";
-      btn.style.background = "";
-    }, 1200);
+    setTimeout(() => (btn.innerText = "Add to Cart"), 1000);
   }
-}
-
-// --- CART LOGIC ---
-function getCartSubtotal() {
-  return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 }
 
 function updateCart() {
@@ -132,81 +106,55 @@ function updateCart() {
   items.innerHTML = "";
 
   if (!cart.length) {
-    items.innerHTML = `<p class="empty-cart">Your cart is empty.</p>`;
+    items.innerHTML = `<p>Your cart is empty.</p>`;
     return;
   }
 
   cart.forEach((item, i) => {
     const row = document.createElement("div");
-    row.className = "cart-item";
-
     row.innerHTML = `
-      <div>
-        <h5>${item.name}</h5>
-        <p>Size: ${item.size}</p>
-        <p>Qty: ${item.quantity}</p>
-      </div>
-      <div>
-        <strong>${formatCurrency(item.price * item.quantity)}</strong>
-        <br>
-        <button onclick="removeFromCart(${i})">Remove</button>
-      </div>
+      <p>${item.name} (${item.size}) x${item.quantity}</p>
+      <p>${formatCurrency(item.price * item.quantity)}</p>
+      <button onclick="removeFromCart(${i})">Remove</button>
     `;
-
     items.appendChild(row);
   });
 
-  const total = getCartSubtotal();
-
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   document.getElementById("cart-total").innerText = formatCurrency(total);
 
-  const count = document.getElementById("cart-count");
-  if (count) {
-    count.innerText = cart.length;
-    count.classList.add("pulse");
-    setTimeout(() => count.classList.remove("pulse"), 300);
-  }
+  document.getElementById("cart-count").innerText = cart.length;
 }
 
-function removeFromCart(index) {
-  cart.splice(index, 1);
+function removeFromCart(i) {
+  cart.splice(i, 1);
   updateCart();
 }
 
 // --- CART UI ---
 function openCart() {
   document.getElementById("cart-panel")?.classList.add("open");
-  document.body.classList.add("cart-open");
 }
 
 function closeCart() {
   document.getElementById("cart-panel")?.classList.remove("open");
-  document.body.classList.remove("cart-open");
 }
 
-// --- FILTER ---
-function filterProducts(category) {
-  activeCategory = category;
-  requestAnimationFrame(() => {
-    displayProducts(getDisplayedProducts());
-  });
-}
-
-// --- LOAD PRODUCTS (LOCAL ONLY SIMPLIFIED) ---
+// --- LOAD PRODUCTS (TEMP LOCAL) ---
 function loadProducts() {
   storeProducts = [
     {
       id: "1",
       name: "Moon Phase Hoodie",
       category: "hoodie",
-      price: 39.99,
+      price: 399,
       images: { black: "images/hoodies/lunar-hoodie-black.png" }
     },
     {
       id: "2",
       name: "Butterfly Tee",
       category: "shirt",
-      price: 24.99,
+      price: 249,
       images: { black: "images/shirts/butterfly-tee-black.png" }
     }
   ];
@@ -215,80 +163,16 @@ function loadProducts() {
   updateCart();
 }
 
-// --- INIT ---
-loadProducts();
-updateCart();
-/* Header layout */
-.site-header {
-  position: sticky;
-  top: 0;
-  background: #000;
-  z-index: 1000;
-  padding: 10px 20px;
-}
-
-.header-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-}
-
-/* LEFT: Logo */
-.logo-left {
-  display: flex;
-  align-items: center;
-}
-
-.logo {
-  height: 35px; /* smaller logo */
-  width: auto;
-}
-
-/* CENTER: Brand name */
-.brand-center {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-}
-
-.brand-center h1 {
-  font-size: 22px;
-  letter-spacing: 3px;
-  margin: 0;
-  color: #fff;
-}
-
-/* RIGHT: Nav + Cart */
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.main-nav a {
-  color: #fff;
-  text-decoration: none;
-  margin-right: 15px;
-  font-size: 14px;
-}
-
-.cart-btn {
-  background: #fff;
-  color: #000;
-  border: none;
-  padding: 6px 12px;
-  cursor: pointer;
-  border-radius: 4px;
-    }
-// Header shrink on scroll
+// --- HEADER SHRINK ---
 window.addEventListener("scroll", () => {
   const header = document.querySelector(".site-header");
-
   if (window.scrollY > 50) {
     header.classList.add("shrink");
   } else {
     header.classList.remove("shrink");
   }
 });
+
+// --- INIT ---
+loadProducts();
+updateCart();
