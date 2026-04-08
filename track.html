@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Track Order - LUNARA</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="track-container">
+  <h2>Track Your Order</h2>
+
+  <input id="order-id" placeholder="Enter Order ID">
+  <button onclick="trackOrder()">Track</button>
+
+  <div id="order-result"></div>
+</div>
+
+<script>
+async function trackOrder() {
+
+  const id = document.getElementById("order-id").value;
+
+  const res = await fetch(`/api/track?id=${id}`);
+  const data = await res.json();
+
+  document.getElementById("order-result").innerHTML = `
+    <h3>Status: ${data.status}</h3>
+    <p>Tracking: ${data.tracking || "Processing..."}</p>
+  `;
+}
+</script>
+
+</body>
+</html>
