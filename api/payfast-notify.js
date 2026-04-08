@@ -1,30 +1,35 @@
 import crypto from "crypto";
+import { Resend } from "resend";
 
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// --- HELPERS ---
 function encodeValue(value = "") {
   return encodeURIComponent(String(value).trim()).replace(/%20/g, "+");
 }
 
 function buildSignatureString(data, passphrase = "") {
-  const filteredKeys = Object.keys(data)
-    .filter((key) => key !== "signature" && data[key] !== undefined && data[key] !== null && data[key] !== "")
+  const keys = Object.keys(data)
+    .filter(k => k !== "signature" && data[k] !== "" && data[k] !== undefined)
     .sort();
 
-  let output = filteredKeys
-    .map((key) => `${key}=${encodeValue(data[key])}`)
-    .join("&");
+  let str = keys.map(k => `${k}=${encodeValue(data[k])}`).join("&");
 
   if (passphrase) {
-    output += `&passphrase=${encodeValue(passphrase)}`;
+    str += `&passphrase=${encodeValue(passphrase)}`;
   }
 
-  return output;
+  return str;
 }
 
 function generateSignature(data, passphrase = "") {
-  const signatureString = buildSignatureString(data, passphrase);
-  return crypto.createHash("md5").update(signatureString).digest("hex");
+  return crypto
+    .createHash("md5")
+    .update(buildSignatureString(data, passphrase))
+    .digest("hex");
 }
 
+// --- MAIN ---
 export default async function handler(req, res) {
 
   if (req.method !== "POST") {
@@ -36,60 +41,59 @@ export default async function handler(req, res) {
     const passphrase = process.env.PAYFAST_PASSPHRASE || "";
 
     // 🔐 VERIFY SIGNATURE
-    const receivedSignature = String(body.signature || "").toLowerCase();
-    const expectedSignature = generateSignature(body, passphrase).toLowerCase();
+    const receivedSig = (body.signature || "").toLowerCase();
+    const expectedSig = generateSignature(body, passphrase).toLowerCase();
 
-    if (!receivedSignature || receivedSignature !== expectedSignature) {
+    if (!receivedSig || receivedSig !== expectedSig) {
       return res.status(400).send("Invalid signature");
     }
 
-    // ✅ ONLY PROCESS SUCCESSFUL PAYMENTS
+    // ❌ Ignore unpaid
     if (body.payment_status !== "COMPLETE") {
       return res.status(200).send("Ignored");
     }
 
-    // 🛒 PARSE FULL CART
-    let cartItems = [];
+    // 🛒 PARSE CART
+    let cart = [];
     try {
-      cartItems = JSON.parse(body.custom_str1 || "[]");
+      cart = JSON.parse(body.custom_str1 || "[]");
     } catch {
-      return res.status(400).send("Invalid cart data");
+      return res.status(400).send("Invalid cart");
     }
 
-    if (!cartItems.length) {
+    if (!cart.length) {
       return res.status(400).send("Empty cart");
     }
 
-    // 🔥 CONVERT TO PRINTIFY FORMAT
-    const lineItems = cartItems.map(item => ({
+    // 📦 BUILD PRINTIFY ITEMS
+    const line_items = cart.map(item => ({
       product_id: item.productId,
       variant_id: Number(item.variantId),
       quantity: Number(item.quantity || 1)
     }));
 
-    // 🚚 SHIPPING DETAILS
     const orderPayload = {
-      external_id: body.m_payment_id || `LUNARA-${Date.now()}`,
+      external_id: body.m_payment_id,
 
-      line_items: lineItems,
+      line_items,
 
       address_to: {
-        first_name: body.name_first || "Customer",
-        last_name: body.name_last || "Lunara",
-        email: body.email_address || "",
-        phone: body.custom_str8 || "",
-        country: body.custom_str7 || "ZA",
-        region: body.custom_str5 || "",
-        address1: body.custom_str3 || "",
-        city: body.custom_str4 || "",
-        zip: body.custom_str6 || ""
+        first_name: body.name_first,
+        last_name: body.name_last,
+        email: body.email_address,
+        phone: body.custom_str8,
+        country: body.custom_str7,
+        region: body.custom_str5,
+        address1: body.custom_str3,
+        city: body.custom_str4,
+        zip: body.custom_str6
       },
 
       shipping_method: 1,
       send_shipping_notification: true
     };
 
-    // 🚀 SEND DIRECTLY TO PRINTIFY
+    // 🚀 SEND TO PRINTIFY
     const response = await fetch(
       `https://api.printify.com/v1/shops/${process.env.PRINTIFY_SHOP_ID}/orders.json`,
       {
@@ -103,13 +107,30 @@ export default async function handler(req, res) {
     );
 
     if (!response.ok) {
-      const errorText = await response.text();
-      return res.status(500).send(`Printify error: ${errorText}`);
+      const err = await response.text();
+      return res.status(500).send("Printify error: " + err);
     }
 
-    return res.status(200).send("Order created");
+    // ✉️ SEND EMAIL (NEW STEP)
+    await resend.emails.send({
+      from: "Lunara <onboarding@resend.dev>", // works instantly
+      to: body.email_address,
+      subject: "Your Lunara Order ✨",
+      html: `
+        <h2>Order Confirmed</h2>
+        <p>Hi ${body.name_first},</p>
+        <p>Your order is being processed.</p>
+        <p><strong>Order ID:</strong> ${body.m_payment_id}</p>
 
-  } catch (error) {
-    return res.status(500).send(`Server error: ${error.message}`);
+        <a href="https://lunara-store-tau.vercel.app/track.html?orderId=${body.m_payment_id}">
+          Track your order
+        </a>
+      `
+    });
+
+    return res.status(200).send("Order processed");
+
+  } catch (err) {
+    return res.status(500).send("Server error: " + err.message);
   }
 }
