@@ -2,57 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LUNARA</title>
 
-  <!-- Fonts -->
+  <!-- Fonts (clean + luxury but readable) -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
 </head>
 
 <body>
 
   <!-- HEADER -->
-<header class="site-header">
-  <div class="header-inner">
+  <header class="site-header">
+    <div class="header-inner">
 
-    <!-- LEFT LOGO -->
-    <div class="logo-left">
-      <img src="images/lunara-website-logo.png" class="logo-main" />
+      <!-- LEFT: LOGO -->
+      <div class="logo-left">
+        <img src="images/lunara-website-logo.png" class="logo" alt="Lunara Logo">
+      </div>
+
+      <!-- CENTER: BRAND -->
+      <div class="brand-center">
+        <h1>LUNARA</h1>
+      </div>
+
+      <!-- RIGHT: NAV -->
+      <div class="header-right">
+
+        <nav class="main-nav">
+          <a href="#shop">Shop</a>
+          <a href="#" id="wishlist-link">Wishlist 🦋</a>
+        </nav>
+
+        <button class="cart-btn" onclick="openCart()">
+          Cart (<span id="cart-count">0</span>)
+        </button>
+
+      </div>
+
     </div>
-
-    <!-- CENTER BRAND -->
-    <div class="brand-center">
-      <h1>LUNARA</h1>
-    </div>
-
-    <!-- RIGHT -->
-    <div class="header-right">
-      <nav class="main-nav">
-        <a href="#shop">Shop</a>
-        <a href="#footer">About</a>
-      </nav>
-
-      <button class="cart-btn">
-        Cart (<span id="cart-count">0</span>)
-      </button>
-    </div>
-
-  </div>
-</header>
+  </header>
 
   <!-- HERO -->
   <section class="hero">
     <div class="centered-hero-content">
       <h2>Streetwear with a cosmic soul.</h2>
       <p class="hero-copy">
-        Discover oversized hoodies, expressive tees, and festival-ready pieces.
+        Discover oversized hoodies, expressive tees, and festival-ready pieces inspired by freedom.
       </p>
 
       <div class="hero-actions">
         <a href="#shop" class="primary-btn">Shop Now</a>
-        <span class="trust-badge">Free shipping over R75</span>
       </div>
     </div>
   </section>
@@ -60,12 +61,38 @@
   <!-- PRODUCTS -->
   <section id="shop" class="products"></section>
 
+  <!-- CART PANEL -->
+  <div id="cart-panel" class="cart-panel">
+    <div class="cart-header">
+      <h3>Your Cart</h3>
+      <button onclick="closeCart()">✕</button>
+    </div>
+
+    <div id="cart-items"></div>
+
+    <div class="cart-footer">
+      <h4>Total: <span id="cart-total">R0.00</span></h4>
+
+      <!-- PAYFAST FORM (SAFE PLACEHOLDER) -->
+      <form id="payfast-form" method="post">
+        <button class="checkout-btn" type="submit">
+          Secure Checkout
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- OVERLAY -->
+  <div id="overlay" onclick="closeCart()"></div>
+
   <!-- FOOTER -->
-  <footer id="footer" class="site-footer">
+  <footer class="site-footer">
     <h4>LUNARA</h4>
     <p>Cosmic streetwear for dreamers.</p>
   </footer>
 
+  <!-- SCRIPT -->
   <script src="script.js"></script>
+
 </body>
 </html>
