@@ -5,173 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LUNARA</title>
 
-  <link rel="stylesheet" href="style.css" />
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
 
-  <!-- Performance -->
-  <link rel="preload" href="images/lunara-website-logo.png" as="image">
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
-  <!-- Announcement -->
-  <div class="announcement-bar">
-    Free shipping on orders over R75 ✦ New cosmic drop live now
-  </div>
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
 
-  <!-- Header -->
-<header class="site-header">
-  <div class="header-inner">
+      <!-- CENTER BRAND -->
+      <div class="brand-center">
+        <h1>LUNARA</h1>
+        <img src="images/lunara-website-logo.png" class="logo-inline" alt="logo" />
+      </div>
 
-    <!-- Left: Logo -->
-    <div class="logo-left">
-      <img src="images/lunara-website-logo.png" class="logo" alt="Lunara Logo" />
+      <!-- RIGHT SIDE -->
+      <div class="header-right">
+        <nav class="main-nav">
+          <a href="#shop">Shop</a>
+          <a href="#size-guide">Size Guide</a>
+          <a href="#footer">About</a>
+        </nav>
+
+        <button class="cart-btn">
+          Cart (<span id="cart-count">0</span>)
+        </button>
+      </div>
+
     </div>
+  </header>
 
-    <!-- Center: Brand Name -->
-    <div class="brand-center">
-      <h1>LUNARA</h1>
-    </div>
-
-    <!-- Right: Navigation + Cart -->
-    <div class="header-right">
-      <nav class="main-nav">
-        <a href="#shop">Shop</a>
-        <a href="#size-guide">Size Guide</a>
-        <a href="#footer">About</a>
-      </nav>
-
-      <button class="cart-btn">
-        Cart (<span id="cart-count">0</span>)
-      </button>
-    </div>
-
-  </div>
-</header>
-
-  <!-- Hero -->
+  <!-- HERO -->
   <section class="hero">
-    <div class="hero-content">
-      <span class="eyebrow">NEW COLLECTION</span>
+    <div class="centered-hero-content">
       <h2>Streetwear with a cosmic soul.</h2>
-      <p>
-        Discover oversized hoodies, expressive tees, and festival-ready pants
-        inspired by moonlight, freedom, and psychedelic energy.
+      <p class="hero-copy">
+        Discover oversized hoodies, expressive tees, and festival-ready pieces.
       </p>
 
       <div class="hero-actions">
         <a href="#shop" class="primary-btn">Shop Now</a>
-        <a href="#size-guide" class="secondary-btn">View Size Guide</a>
+        <span class="trust-badge">Free shipping over R75</span>
       </div>
     </div>
   </section>
 
-  <!-- Shop Heading -->
-  <section class="section-heading">
-    <p class="section-label">LUNARA DROP</p>
-    <h3>Shop the collection</h3>
-  </section>
-
-  <!-- Filters -->
-  <section class="filters">
-    <button data-filter="all">All</button>
-    <button data-filter="hoodie">Hoodies</button>
-    <button data-filter="shirt">T-Shirts</button>
-    <button data-filter="pants">Pants</button>
-    <button data-filter="favorites">Favorites</button>
-  </section>
-
-  <!-- Products -->
+  <!-- PRODUCTS -->
   <section id="shop" class="products"></section>
 
-  <!-- Overlay -->
-  <div id="overlay" class="overlay"></div>
-
-  <!-- Cart -->
-  <aside id="cart-panel" class="cart-panel">
-
-    <div class="cart-header">
-      <h3>Your Cart</h3>
-      <button class="close-cart">✕</button>
-    </div>
-
-    <div id="cart-items" class="cart-items">
-      <p class="empty-cart">Your cart is empty</p>
-    </div>
-
-    <div class="cart-footer">
-
-      <h4>Subtotal: <span id="cart-subtotal">R0.00</span></h4>
-
-      <!-- Promo -->
-      <div class="promo-box">
-        <label for="promo-code">Promo code</label>
-
-        <div class="promo-row">
-          <input type="text" id="promo-code" placeholder="Enter code" />
-          <button type="button" class="promo-btn">Apply</button>
-        </div>
-
-        <p id="promo-message" class="promo-message"></p>
-
-        <div class="promo-summary">
-          <p>Discount: <span id="cart-discount">R0.00</span></p>
-          <p class="promo-total">Total: <span id="cart-total">R0.00</span></p>
-        </div>
-      </div>
-
-      <!-- Checkout Fields -->
-      <div class="checkout-fields">
-
-        <label for="customer-first-name">First Name</label>
-        <input type="text" id="customer-first-name" required />
-
-        <label for="customer-last-name">Last Name</label>
-        <input type="text" id="customer-last-name" required />
-
-        <label for="customer-email">Email</label>
-        <input type="email" id="customer-email" required />
-
-        <label for="customer-phone">Phone</label>
-        <input type="tel" id="customer-phone" required />
-
-        <label for="customer-address1">Street Address</label>
-        <input type="text" id="customer-address1" required />
-
-        <label for="customer-city">City</label>
-        <input type="text" id="customer-city" required />
-
-        <label for="customer-region">Province / Region</label>
-        <input type="text" id="customer-region" required />
-
-        <label for="customer-zip">Postal Code</label>
-        <input type="text" id="customer-zip" required />
-
-        <label for="customer-country">Country</label>
-        <select id="customer-country">
-          <option value="ZA">South Africa</option>
-        </select>
-
-      </div>
-
-      <!-- Checkout Button -->
-      <button id="checkout-btn" class="checkout-btn">
-        Secure Checkout
-      </button>
-
-    </div>
-
-  </aside>
-
-  <!-- Footer -->
+  <!-- FOOTER -->
   <footer id="footer" class="site-footer">
-    <div class="footer-inner">
-      <h4>LUNARA</h4>
-      <p>Cosmic streetwear for dreamers.</p>
-    </div>
+    <h4>LUNARA</h4>
+    <p>Cosmic streetwear for dreamers.</p>
   </footer>
 
-  <!-- Script -->
   <script src="script.js"></script>
-
 </body>
 </html>
