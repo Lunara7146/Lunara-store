@@ -7,6 +7,9 @@ export default async function handler(req, res) {
 
   const data = req.body;
 
+  // ✅ CREATE ORDER ID OUTSIDE OBJECT
+  const orderId = "LUNARA-" + Date.now();
+
   const pfData = {
     merchant_id: process.env.PAYFAST_MERCHANT_ID,
     merchant_key: process.env.PAYFAST_MERCHANT_KEY,
@@ -19,10 +22,11 @@ export default async function handler(req, res) {
     name_last: data.lastName,
     email_address: data.email,
 
-    const orderId = "LUNARA-" + Date.now();
+    m_payment_id: orderId,
+    custom_str9: orderId, // 🔥 used for tracking redirect
 
-m_payment_id: orderId,
-custom_str9: orderId, // 👈 we use this for tracking redirect
+    amount: data.amount,
+    item_name: "Lunara Order",
 
     // 🛒 FULL CART
     custom_str1: JSON.stringify(data.cart),
@@ -59,8 +63,9 @@ custom_str9: orderId, // 👈 we use this for tracking redirect
 
   const paymentUrl = `https://sandbox.payfast.co.za/eng/process?${paramString}&signature=${signature}`;
 
-  // ✅ RETURN URL (NOT RAW DATA)
+  // ✅ SEND URL BACK
   res.status(200).json({
-    url: paymentUrl
+    url: paymentUrl,
+    orderId // 👈 optional but useful
   });
-                }
+}
