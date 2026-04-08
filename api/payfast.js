@@ -19,9 +19,10 @@ export default async function handler(req, res) {
     name_last: data.lastName,
     email_address: data.email,
 
-    m_payment_id: Date.now().toString(),
-    amount: data.amount,
-    item_name: "Lunara Order",
+    const orderId = "LUNARA-" + Date.now();
+
+m_payment_id: orderId,
+custom_str9: orderId, // 👈 we use this for tracking redirect
 
     // 🛒 FULL CART
     custom_str1: JSON.stringify(data.cart),
