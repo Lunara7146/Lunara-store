@@ -1,58 +1,106 @@
-// --- STATE ---
+// ==========================
+// 🧠 STATE
+// ==========================
 let cart = JSON.parse(localStorage.getItem("lunaraCart")) || [];
-let activeCategory = "all";
-let storeProducts = [];
 let favorites = JSON.parse(localStorage.getItem("lunaraFavorites")) || [];
+let storeProducts = [];
 
-// --- CONSTANTS ---
-const fallbackSizes = ["S", "M", "L", "XL"];
-const productsContainer = document.querySelector(".products");
-
-// --- HELPERS ---
+// ==========================
+// ⚙️ HELPERS
+// ==========================
 function saveCart() {
   localStorage.setItem("lunaraCart", JSON.stringify(cart));
+}
+
+function saveFavorites() {
+  localStorage.setItem("lunaraFavorites", JSON.stringify(favorites));
 }
 
 function formatCurrency(amount) {
   return "R" + Number(amount || 0).toFixed(2);
 }
 
-// --- DISPLAY PRODUCTS ---
-function displayProducts(list) {
+// ==========================
+// 🛍️ DISPLAY PRODUCTS
+// ==========================
+const productsContainer = document.querySelector(".products");
+
+function displayProducts(products) {
+  if (!productsContainer) return;
+
   productsContainer.innerHTML = "";
 
-  if (!list.length) {
+  if (!products.length) {
     productsContainer.innerHTML = `<p>No products found.</p>`;
     return;
   }
 
-  list.forEach((product, index) => {
-    const div = document.createElement("div");
-    div.className = "product-card";
+  products.forEach((product, index) => {
 
-    div.innerHTML = `
-      <img src="${product.image}" class="product-image">
+    const stock = Math.floor(Math.random() * 6) + 3;
+    const reviews = Math.floor(Math.random() * 1500) + 300;
+    const isFav = favorites.includes(product.id);
+
+    const card = document.createElement("div");
+    card.className = "product-card";
+
+    card.innerHTML = `
+      <div class="product-image-wrap">
+        <img src="${product.image}" class="product-image">
+      </div>
 
       <div class="product-info">
-        <h4>${product.name}</h4>
+
+        <div class="product-top">
+          <h4>${product.name}</h4>
+          <button class="fav-btn ${isFav ? "active" : ""}" onclick="toggleFavorite('${product.id}', this)">
+            🦋
+          </button>
+        </div>
+
         <p class="product-price">${formatCurrency(product.price)}</p>
 
+        <p class="product-tag">🔥 Almost sold out</p>
+        <p class="product-stock">Only ${stock} left</p>
+        <p class="product-reviews">★★★★★ (${reviews})</p>
+
         <select id="size-${index}">
-          ${fallbackSizes.map(s => `<option>${s}</option>`).join("")}
+          <option>S</option>
+          <option>M</option>
+          <option>L</option>
+          <option>XL</option>
         </select>
 
-        <button onclick="addToCart(${index}, event)">Add to Cart</button>
+        <button onclick="addToCart(${index}, event)">
+          Add to Cart →
+        </button>
+
       </div>
     `;
 
-    productsContainer.appendChild(div);
+    productsContainer.appendChild(card);
   });
 }
 
-// --- ADD TO CART (CRITICAL FIX) ---
+// ==========================
+// ❤️ FAVORITES
+// ==========================
+function toggleFavorite(id, el) {
+  if (favorites.includes(id)) {
+    favorites = favorites.filter(f => f !== id);
+    el.classList.remove("active");
+  } else {
+    favorites.push(id);
+    el.classList.add("active");
+  }
+  saveFavorites();
+}
+
+// ==========================
+// 🛒 ADD TO CART
+// ==========================
 function addToCart(index, event) {
   const product = storeProducts[index];
-
   const size = document.getElementById(`size-${index}`)?.value || "M";
 
   const existing = cart.find(
@@ -77,29 +125,50 @@ function addToCart(index, event) {
 
   saveCart();
   updateCart();
+  openCart();
 
+  // UX feedback
   if (event?.target) {
     const btn = event.target;
     btn.innerText = "Added ✓";
+    btn.style.background = "var(--success)";
     setTimeout(() => {
-      btn.innerText = "Add to Cart";
+      btn.innerText = "Add to Cart →";
+      btn.style.background = "";
     }, 1200);
   }
 }
 
-// --- CART ---
+// ==========================
+// 🧾 CART
+// ==========================
 function updateCart() {
   const items = document.getElementById("cart-items");
   if (!items) return;
 
   items.innerHTML = "";
 
+  if (!cart.length) {
+    items.innerHTML = `<p>Your cart is empty.</p>`;
+    return;
+  }
+
   cart.forEach((item, i) => {
     const row = document.createElement("div");
+    row.className = "cart-item";
 
     row.innerHTML = `
-      <p>${item.name} (${item.size}) x${item.quantity}</p>
-      <button onclick="removeFromCart(${i})">Remove</button>
+      <div>
+        <h5>${item.name}</h5>
+        <p>Size: ${item.size}</p>
+        <p>Qty: ${item.quantity}</p>
+      </div>
+
+      <div>
+        <strong>${formatCurrency(item.price * item.quantity)}</strong>
+        <br>
+        <button onclick="removeFromCart(${i})">Remove</button>
+      </div>
     `;
 
     items.appendChild(row);
@@ -108,15 +177,33 @@ function updateCart() {
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   document.getElementById("cart-total").innerText = formatCurrency(total);
+
+  const count = document.getElementById("cart-count");
+  if (count) count.innerText = cart.length;
 }
 
-function removeFromCart(i) {
-  cart.splice(i, 1);
+function removeFromCart(index) {
+  cart.splice(index, 1);
   saveCart();
   updateCart();
 }
 
-// --- CHECKOUT (FULLY FIXED) ---
+// ==========================
+// 🛒 CART UI
+// ==========================
+function openCart() {
+  document.getElementById("cart-panel")?.classList.add("open");
+  document.body.classList.add("cart-open");
+}
+
+function closeCart() {
+  document.getElementById("cart-panel")?.classList.remove("open");
+  document.body.classList.remove("cart-open");
+}
+
+// ==========================
+// 💳 CHECKOUT (PAYFAST)
+// ==========================
 async function checkout() {
 
   const firstName = document.getElementById("customer-first-name").value;
@@ -132,10 +219,8 @@ async function checkout() {
 
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-  // 🔥 CREATE ORDER ID (IMPORTANT)
+  // Save fallback order id
   const orderId = "LUNARA-" + Date.now();
-
-  // Save for redirect fallback
   localStorage.setItem("lunara_order_id", orderId);
 
   const res = await fetch("/api/payfast", {
@@ -161,11 +246,12 @@ async function checkout() {
 
   const data = await res.json();
 
-  // 🔥 REDIRECT TO PAYFAST
   window.location.href = data.url;
 }
 
-// --- LOAD PRODUCTS (PRINTIFY READY) ---
+// ==========================
+// 📦 LOAD PRODUCTS (PRINTIFY)
+// ==========================
 async function loadProducts() {
   try {
     const res = await fetch("/api/products");
@@ -175,15 +261,14 @@ async function loadProducts() {
       id: p.id,
       name: p.title,
       price: p.variants[0].price / 100,
-      image: p.images[0].src,
+      image: p.images[0]?.src,
 
-      // 🔥 REQUIRED
       productId: p.id,
       variantId: p.variants[0].id
     }));
 
-  } catch {
-    // fallback
+  } catch (err) {
+    console.error("Product load failed:", err);
     storeProducts = [];
   }
 
@@ -191,6 +276,21 @@ async function loadProducts() {
   updateCart();
 }
 
-// --- INIT ---
+// ==========================
+// 🧊 HEADER SHRINK
+// ==========================
+window.addEventListener("scroll", () => {
+  const header = document.querySelector(".site-header");
+
+  if (window.scrollY > 50) {
+    header.classList.add("shrink");
+  } else {
+    header.classList.remove("shrink");
+  }
+});
+
+// ==========================
+// 🚀 INIT
+// ==========================
 loadProducts();
 updateCart();
