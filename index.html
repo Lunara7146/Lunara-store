@@ -19,12 +19,7 @@
 
       <!-- LEFT: LOGO -->
       <div class="logo-left">
-        <img src="images/lunara-website-logo.png" class="logo" />
-      </div>
-
-      <!-- CENTER: BRAND -->
-      <div class="brand-center">
-        <h1>LUNARA</h1>
+        <img src="images/lunara-website-logo.png" class="logo" alt="Lunara logo"/>
       </div>
 
       <!-- RIGHT: NAV -->
@@ -35,7 +30,7 @@
         </nav>
 
         <button class="cart-btn" onclick="openCart()">
-          Cart (<span id="cart-count">0</span>)
+          🛒 <span id="cart-count">0</span>
         </button>
       </div>
 
@@ -58,13 +53,18 @@
         <a href="#shop" class="btn-primary">Shop Collection</a>
         <a href="#premium-trust" class="btn-secondary">Why Lunara</a>
       </div>
+
+      <!-- NEW: subtle urgency -->
+      <p class="hero-proof">
+        🔥 Limited launch collection — once it's gone, it's gone
+      </p>
     </div>
   </section>
 
   <!-- TRUST BAR -->
   <section class="trust-bar">
     <div class="trust-bar-inner">
-      <span>✨ Trusted by 2,000+ customers</span>
+      <span>✨ Limited launch collection</span>
       <span>🔒 Secure checkout</span>
       <span>🚚 Tracked shipping</span>
       <span>💫 Premium quality</span>
@@ -138,12 +138,12 @@
       <!-- CUSTOMER INFO -->
       <input id="customer-first-name" placeholder="First name">
       <input id="customer-last-name" placeholder="Last name">
-      <input id="customer-email" placeholder="Email">
-      <input id="customer-phone" placeholder="Phone">
+      <input id="customer-email" placeholder="Email (for order updates)">
+      <input id="customer-phone" placeholder="Phone (for delivery)">
 
-      <input id="customer-address1" placeholder="Address">
+      <input id="customer-address1" placeholder="Street address">
       <input id="customer-city" placeholder="City">
-      <input id="customer-region" placeholder="Region">
+      <input id="customer-region" placeholder="Province">
       <input id="customer-zip" placeholder="Postal code">
       <input id="customer-country" value="ZA">
 
@@ -157,35 +157,38 @@
   </aside>
 
   <!-- FOOTER -->
-<footer class="premium-footer">
+  <footer class="premium-footer">
 
-  <div class="footer-grid">
+    <div class="footer-grid">
 
-    <div>
-      <h3>LUNARA</h3>
-      <p>Cosmic streetwear for dreamers.</p>
+      <div>
+        <img src="images/lunara-website-logo.png" class="footer-logo" alt="Lunara logo">
+        <p>Cosmic streetwear for dreamers.</p>
+      </div>
+
+      <div>
+        <h4>Shop</h4>
+        <a href="#shop">All Products</a>
+        <a href="#shop">Hoodies</a>
+        <a href="#shop">T-Shirts</a>
+      </div>
+
+      <div>
+        <h4>Support</h4>
+        <p>Email: support@lunara.store</p>
+        <p>Response time: 24–48h</p>
+      </div>
+
+      <div>
+        <h4>Trust</h4>
+        <p>Secure checkout</p>
+        <p>Tracked shipping</p>
+        <p>Quality guarantee</p>
+      </div>
+
     </div>
 
-    <div>
-      <h4>Shop</h4>
-      <a href="#shop">All Products</a>
-      <a href="#shop">Hoodies</a>
-      <a href="#shop">T-Shirts</a>
-    </div>
+  </footer>
 
-    <div>
-      <h4>Support</h4>
-      <p>Email: support@lunara.store</p>
-      <p>Response time: 24–48h</p>
-    </div>
-
-    <div>
-      <h4>Trust</h4>
-      <p>Secure checkout</p>
-      <p>Tracked shipping</p>
-      <p>Quality guarantee</p>
-    </div>
-
-  </div>
-
-</footer>
+</body>
+</html>
