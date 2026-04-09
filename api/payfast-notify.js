@@ -3,6 +3,9 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Prevent duplicate orders (basic memory cache)
+const processedOrders = new Set();
+
 // --- HELPERS ---
 function encodeValue(value = "") {
   return encodeURIComponent(String(value).trim()).replace(/%20/g, "+");
@@ -53,6 +56,12 @@ export default async function handler(req, res) {
       return res.status(200).send("Ignored");
     }
 
+    // ❌ Prevent duplicate processing
+    if (processedOrders.has(body.m_payment_id)) {
+      return res.status(200).send("Already processed");
+    }
+    processedOrders.add(body.m_payment_id);
+
     // 🛒 PARSE CART
     let cart = [];
     try {
@@ -74,9 +83,7 @@ export default async function handler(req, res) {
 
     const orderPayload = {
       external_id: body.m_payment_id,
-
       line_items,
-
       address_to: {
         first_name: body.name_first,
         last_name: body.name_last,
@@ -88,7 +95,6 @@ export default async function handler(req, res) {
         city: body.custom_str4,
         zip: body.custom_str6
       },
-
       shipping_method: 1,
       send_shipping_notification: true
     };
@@ -111,22 +117,38 @@ export default async function handler(req, res) {
       return res.status(500).send("Printify error: " + err);
     }
 
-    // ✉️ SEND EMAIL (NEW STEP)
-    await resend.emails.send({
-      from: "Lunara <onboarding@resend.dev>", // works instantly
-      to: body.email_address,
-      subject: "Your Lunara Order ✨",
-      html: `
-        <h2>Order Confirmed</h2>
-        <p>Hi ${body.name_first},</p>
-        <p>Your order is being processed.</p>
-        <p><strong>Order ID:</strong> ${body.m_payment_id}</p>
+    // ✉️ SEND EMAIL (SAFE)
+    try {
+      await resend.emails.send({
+        from: "Lunara <onboarding@resend.dev>",
+        to: body.email_address,
+        subject: "🌙 Your Lunara Order is Confirmed",
+        html: `
+          <div style="font-family: Arial; padding:20px;">
+            <h2>Order Confirmed 🌙</h2>
 
-        <a href="https://lunara-store-tau.vercel.app/track.html?orderId=${body.m_payment_id}">
-          Track your order
-        </a>
-      `
-    });
+            <p>Hi ${body.name_first},</p>
+
+            <p>Your order is officially being processed.</p>
+
+            <p><strong>Order ID:</strong> ${body.m_payment_id}</p>
+
+            <p>You’ll receive tracking details once shipped.</p>
+
+            <br>
+
+            <a href="https://lunara-store-tau.vercel.app/track.html?orderId=${body.m_payment_id}"
+              style="background:#b98cff;padding:12px 20px;color:#000;text-decoration:none;border-radius:8px;">
+              Track Order
+            </a>
+
+            <p style="margin-top:30px;">– Lunara</p>
+          </div>
+        `
+      });
+    } catch (emailError) {
+      console.error("Email failed:", emailError);
+    }
 
     return res.status(200).send("Order processed");
 
