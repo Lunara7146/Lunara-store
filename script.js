@@ -6,6 +6,36 @@ let favorites = JSON.parse(localStorage.getItem("lunaraFavorites")) || [];
 let storeProducts = [];
 
 // ==========================
+// 🧾 FALLBACK PRODUCTS (LOCAL)
+// ==========================
+const fallbackProducts = [
+  {
+    id: "butterfly-hoodie-black",
+    name: "Butterfly Hoodie (Black)",
+    price: 599,
+    image: "images/hoodies/butterfly-hoodie-black.png"
+  },
+  {
+    id: "cosmic-eye-hoodie-black",
+    name: "Cosmic Eye Hoodie (Black)",
+    price: 599,
+    image: "images/hoodies/cosmic-eye-hoodie-black.png"
+  },
+  {
+    id: "drip-smile-tee-black",
+    name: "Drip Smile Tee (Black)",
+    price: 299,
+    image: "images/shirts/drip-smile-tee-black.png"
+  },
+  {
+    id: "cosmic-butterfly-pants-black",
+    name: "Cosmic Butterfly Pants",
+    price: 499,
+    image: "images/pants/cosmic-butterfly-pants-black.png"
+  }
+];
+
+// ==========================
 // ⚙️ HELPERS
 // ==========================
 function saveCart() {
@@ -41,7 +71,7 @@ function displayProducts(products) {
     const reviews = Math.floor(Math.random() * 1500) + 300;
     const isFav = favorites.includes(product.id);
 
-    const image = product.image || product.images?.black || "images/placeholder.png";
+    const image = product.image || "images/placeholder.png";
 
     const card = document.createElement("div");
     card.className = "product-card";
@@ -104,6 +134,12 @@ function toggleFavorite(id, el) {
 function addToCart(index, event) {
   const product = storeProducts[index];
   const size = document.getElementById(`size-${index}`)?.value || "M";
+
+  // 🚨 Prevent checkout if fallback product
+  if (!product.productId) {
+    alert("This product is currently unavailable for checkout.");
+    return;
+  }
 
   const existing = cart.find(
     item => item.id === product.id && item.size === size
@@ -177,7 +213,6 @@ function updateCart() {
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
   document.getElementById("cart-total").innerText = formatCurrency(total);
 
-  // 🔥 FIX: show total quantity, not just items
   const count = document.getElementById("cart-count");
   if (count) {
     const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
@@ -261,11 +296,18 @@ async function checkout() {
 }
 
 // ==========================
-// 📦 LOAD PRODUCTS (PRINTIFY)
+// 📦 LOAD PRODUCTS (PRINTIFY + FALLBACK)
 // ==========================
 async function loadProducts() {
+  if (productsContainer) {
+    productsContainer.innerHTML = `<p>Loading products...</p>`;
+  }
+
   try {
     const res = await fetch("/api/products");
+
+    if (!res.ok) throw new Error("API failed");
+
     const data = await res.json();
 
     storeProducts = data.data.map(product => {
@@ -276,7 +318,7 @@ async function loadProducts() {
         name: product.title,
         category: "all",
         price: variant.price / 100,
-        image: product.images[0]?.src, // ✅ FIXED
+        image: product.images[0]?.src,
         productId: product.id,
         variantId: variant.id
       };
@@ -286,7 +328,12 @@ async function loadProducts() {
     updateCart();
 
   } catch (err) {
-    console.error("Failed to load products:", err);
+    console.error("Printify failed, using fallback products", err);
+
+    storeProducts = fallbackProducts;
+
+    displayProducts(storeProducts);
+    updateCart();
   }
 }
 
