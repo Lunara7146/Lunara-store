@@ -257,25 +257,30 @@ async function loadProducts() {
     const res = await fetch("/api/products");
     const data = await res.json();
 
-    storeProducts = data.map(p => ({
-      id: p.id,
-      name: p.title,
-      price: p.variants[0].price / 100,
-      image: p.images[0]?.src,
+    // Convert Printify products → your format
+    storeProducts = data.data.map(product => {
+      const variant = product.variants[0];
 
-      productId: p.id,
-      variantId: p.variants[0].id
-    }));
+      return {
+        id: product.id,
+        name: product.title,
+        category: "all",
+        price: variant.price / 100, // convert cents
+        images: {
+          black: product.images[0]?.src
+        },
+        productId: product.id,
+        variantId: variant.id
+      };
+    });
+
+    displayProducts(getDisplayedProducts());
+    updateCart();
 
   } catch (err) {
-    console.error("Product load failed:", err);
-    storeProducts = [];
+    console.error("Failed to load products:", err);
   }
-
-  displayProducts(storeProducts);
-  updateCart();
 }
-
 // ==========================
 // 🧊 HEADER SHRINK
 // ==========================
