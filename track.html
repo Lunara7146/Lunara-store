@@ -1,33 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Track Order - LUNARA</title>
+  <meta charset="UTF-8">
+  <title>Track Your Order - Lunara</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="track-container">
-  <h2>Track Your Order</h2>
+<section class="tracking-page">
+  <h1>Track Your Order</h1>
 
-  <input id="order-id" placeholder="Enter Order ID">
-  <button onclick="trackOrder()">Track</button>
+  <div class="tracking-box">
+    <p><strong>Order ID:</strong> <span id="order-id"></span></p>
 
-  <div id="order-result"></div>
-</div>
+    <div class="tracking-status">
+      <div class="step active">Order Received</div>
+      <div class="step">In Production</div>
+      <div class="step">Shipped</div>
+    </div>
+
+    <p class="tracking-note">
+      You will receive tracking updates via email once your order ships.
+    </p>
+  </div>
+</section>
 
 <script>
-async function trackOrder() {
-
-  const id = document.getElementById("order-id").value;
-
-  const res = await fetch(`/api/track?id=${id}`);
-  const data = await res.json();
-
-  document.getElementById("order-result").innerHTML = `
-    <h3>Status: ${data.status}</h3>
-    <p>Tracking: ${data.tracking || "Processing..."}</p>
-  `;
-}
+  const params = new URLSearchParams(window.location.search);
+  document.getElementById("order-id").innerText = params.get("orderId");
 </script>
 
 </body>
