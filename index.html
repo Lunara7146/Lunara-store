@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LUNARA</title>
 
-  <!-- Fonts (clean + luxury but readable) -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+  <!-- Premium Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
@@ -19,7 +19,7 @@
 
       <!-- LEFT: LOGO -->
       <div class="logo-left">
-        <img src="images/lunara-website-logo.png" class="logo" alt="Lunara Logo">
+        <img src="images/lunara-website-logo.png" class="logo" />
       </div>
 
       <!-- CENTER: BRAND -->
@@ -29,49 +29,102 @@
 
       <!-- RIGHT: NAV -->
       <div class="header-right">
-
         <nav class="main-nav">
           <a href="#shop">Shop</a>
-          <a href="#" id="wishlist-link">Wishlist 🦋</a>
+          <a href="#premium-trust">Why</a>
         </nav>
 
         <button class="cart-btn" onclick="openCart()">
           Cart (<span id="cart-count">0</span>)
         </button>
-
       </div>
 
     </div>
   </header>
 
   <!-- HERO -->
-  <section class="hero">
-    <div class="centered-hero-content">
-      <h2>Streetwear with a cosmic soul.</h2>
-      <p class="hero-copy">
-        Discover oversized hoodies, expressive tees, and festival-ready pieces inspired by freedom.
+  <section class="hero-premium">
+    <div class="hero-content">
+      <p class="hero-eyebrow">NEW DROP</p>
+
+      <h1>Streetwear for those who move differently</h1>
+
+      <p class="hero-sub">
+        Designed for expression. Built for presence.
+        Limited pieces. No restocks.
       </p>
 
-      <div class="hero-actions">
-        <a href="#shop" class="primary-btn">Shop Now</a>
+      <div class="hero-buttons">
+        <a href="#shop" class="btn-primary">Shop Collection</a>
+        <a href="#premium-trust" class="btn-secondary">Why Lunara</a>
       </div>
     </div>
   </section>
-  
-<section class="trust-bar">
-  <div class="trust-bar-inner">
-    <span>✨ Trusted by 2,000+ customers</span>
-    <span>🔒 Secure checkout</span>
-    <span>🚚 Tracked worldwide shipping</span>
-    <span>💫 Premium quality guarantee</span>
-  </div>
-</section>
-  
-  <!-- PRODUCTS -->
+
+  <!-- TRUST BAR -->
+  <section class="trust-bar">
+    <div class="trust-bar-inner">
+      <span>✨ Trusted by 2,000+ customers</span>
+      <span>🔒 Secure checkout</span>
+      <span>🚚 Tracked shipping</span>
+      <span>💫 Premium quality</span>
+    </div>
+  </section>
+
+  <!-- FEATURED -->
+  <section class="featured-banner">
+    <h2>Limited Cosmic Drop</h2>
+    <p>Once it's gone, it's gone.</p>
+  </section>
+
+  <!-- SHOP -->
   <section id="shop" class="products"></section>
 
-  <!-- CART PANEL -->
-  <div id="cart-panel" class="cart-panel">
+  <!-- PREMIUM TRUST SECTION -->
+  <section id="premium-trust" class="premium-trust">
+
+    <h2 class="trust-heading">Why customers choose Lunara</h2>
+
+    <div class="trust-grid">
+
+      <div class="trust-card">
+        <h3>🌙 Designed for self-expression</h3>
+        <p>
+          Each piece is crafted to stand out.
+          Made for individuals who move differently.
+        </p>
+      </div>
+
+      <div class="trust-card">
+        <h3>🚚 Fast & tracked delivery</h3>
+        <p>
+          Every order includes tracking so you always know where it is.
+        </p>
+      </div>
+
+      <div class="trust-card">
+        <h3>🔒 Secure checkout</h3>
+        <p>
+          Payments are protected and processed securely.
+        </p>
+      </div>
+
+      <div class="trust-card">
+        <h3>💫 Quality guarantee</h3>
+        <p>
+          If something isn’t right, we’ll make it right.
+        </p>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- CART -->
+  <div id="overlay" class="overlay" onclick="closeCart()"></div>
+
+  <aside id="cart-panel" class="cart-panel">
+
     <div class="cart-header">
       <h3>Your Cart</h3>
       <button onclick="closeCart()">✕</button>
@@ -82,25 +135,45 @@
     <div class="cart-footer">
       <h4>Total: <span id="cart-total">R0.00</span></h4>
 
-      <!-- PAYFAST FORM (SAFE PLACEHOLDER) -->
-      <form id="payfast-form" method="post">
-        <button class="checkout-btn" type="submit">
-          Secure Checkout
-        </button>
-      </form>
-    </div>
-  </div>
+      <!-- CUSTOMER INFO -->
+      <input id="customer-first-name" placeholder="First name">
+      <input id="customer-last-name" placeholder="Last name">
+      <input id="customer-email" placeholder="Email">
+      <input id="customer-phone" placeholder="Phone">
 
-  <!-- OVERLAY -->
-  <div id="overlay" onclick="closeCart()"></div>
+      <input id="customer-address1" placeholder="Address">
+      <input id="customer-city" placeholder="City">
+      <input id="customer-region" placeholder="Region">
+      <input id="customer-zip" placeholder="Postal code">
+      <input id="customer-country" value="ZA">
+
+      <!-- CHECKOUT BUTTON -->
+      <button class="checkout-btn" onclick="checkout()">
+        Secure Checkout →
+      </button>
+
+    </div>
+
+  </aside>
 
   <!-- FOOTER -->
   <footer class="site-footer">
-    <h4>LUNARA</h4>
-    <p>Cosmic streetwear for dreamers.</p>
+    <div class="footer-inner">
+
+      <h4>LUNARA</h4>
+      <p>Cosmic streetwear for dreamers.</p>
+
+      <div class="footer-links">
+        <a href="#">About</a>
+        <a href="#">Shipping</a>
+        <a href="#">Returns</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+      </div>
+
+    </div>
   </footer>
 
-  <!-- SCRIPT -->
   <script src="script.js"></script>
 
 </body>
