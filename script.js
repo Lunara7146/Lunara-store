@@ -41,12 +41,14 @@ function displayProducts(products) {
     const reviews = Math.floor(Math.random() * 1500) + 300;
     const isFav = favorites.includes(product.id);
 
+    const image = product.image || product.images?.black || "images/placeholder.png";
+
     const card = document.createElement("div");
     card.className = "product-card";
 
     card.innerHTML = `
       <div class="product-image-wrap">
-        <img src="${product.image}" class="product-image">
+        <img src="${image}" class="product-image" alt="${product.name}">
       </div>
 
       <div class="product-info">
@@ -116,8 +118,6 @@ function addToCart(index, event) {
       price: product.price,
       size,
       quantity: 1,
-
-      // 🔥 REQUIRED FOR PRINTIFY
       productId: product.productId,
       variantId: product.variantId
     });
@@ -127,7 +127,6 @@ function addToCart(index, event) {
   updateCart();
   openCart();
 
-  // UX feedback
   if (event?.target) {
     const btn = event.target;
     btn.innerText = "Added ✓";
@@ -150,6 +149,7 @@ function updateCart() {
 
   if (!cart.length) {
     items.innerHTML = `<p>Your cart is empty.</p>`;
+    document.getElementById("cart-total").innerText = "R0.00";
     return;
   }
 
@@ -175,11 +175,14 @@ function updateCart() {
   });
 
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-
   document.getElementById("cart-total").innerText = formatCurrency(total);
 
+  // 🔥 FIX: show total quantity, not just items
   const count = document.getElementById("cart-count");
-  if (count) count.innerText = cart.length;
+  if (count) {
+    const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
+    count.innerText = totalItems;
+  }
 }
 
 function removeFromCart(index) {
@@ -206,11 +209,21 @@ function closeCart() {
 // ==========================
 async function checkout() {
 
+  if (!cart.length) {
+    alert("Your cart is empty.");
+    return;
+  }
+
   const firstName = document.getElementById("customer-first-name").value;
   const lastName = document.getElementById("customer-last-name").value;
   const email = document.getElementById("customer-email").value;
-  const phone = document.getElementById("customer-phone").value;
 
+  if (!firstName || !lastName || !email) {
+    alert("Please fill in your name and email.");
+    return;
+  }
+
+  const phone = document.getElementById("customer-phone").value;
   const address1 = document.getElementById("customer-address1").value;
   const city = document.getElementById("customer-city").value;
   const region = document.getElementById("customer-region").value;
@@ -219,7 +232,6 @@ async function checkout() {
 
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-  // Save fallback order id
   const orderId = "LUNARA-" + Date.now();
   localStorage.setItem("lunara_order_id", orderId);
 
@@ -245,7 +257,6 @@ async function checkout() {
   });
 
   const data = await res.json();
-
   window.location.href = data.url;
 }
 
@@ -257,7 +268,6 @@ async function loadProducts() {
     const res = await fetch("/api/products");
     const data = await res.json();
 
-    // Convert Printify products → your format
     storeProducts = data.data.map(product => {
       const variant = product.variants[0];
 
@@ -265,22 +275,21 @@ async function loadProducts() {
         id: product.id,
         name: product.title,
         category: "all",
-        price: variant.price / 100, // convert cents
-        images: {
-          black: product.images[0]?.src
-        },
+        price: variant.price / 100,
+        image: product.images[0]?.src, // ✅ FIXED
         productId: product.id,
         variantId: variant.id
       };
     });
 
-    displayProducts(getDisplayedProducts());
+    displayProducts(storeProducts);
     updateCart();
 
   } catch (err) {
     console.error("Failed to load products:", err);
   }
 }
+
 // ==========================
 // 🧊 HEADER SHRINK
 // ==========================
