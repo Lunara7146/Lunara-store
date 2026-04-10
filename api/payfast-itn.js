@@ -15,6 +15,8 @@ export default async function handler(req, res) {
   try {
     const data = req.body;
 
+    console.log("🔔 PayFast ITN:", data);
+
     // ==========================
     // 🔐 SIGNATURE CHECK
     // ==========================
@@ -40,33 +42,55 @@ export default async function handler(req, res) {
       .digest("hex");
 
     if (generatedSignature !== receivedSignature) {
+      console.error("❌ Invalid signature");
       return res.status(400).send("Invalid signature");
     }
 
     // ==========================
-    // 💳 PAYMENT CHECK
+    // 🌐 VERIFY WITH PAYFAST
+    // ==========================
+    const verifyRes = await fetch("https://www.payfast.co.za/eng/query/validate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: queryString
+    });
+
+    const verifyText = await verifyRes.text();
+
+    if (verifyText !== "VALID") {
+      console.error("❌ PayFast validation failed");
+      return res.status(400).send("Validation failed");
+    }
+
+    // ==========================
+    // 💳 PAYMENT STATUS
     // ==========================
     if (data.payment_status !== "COMPLETE") {
       return res.status(200).send("Ignored");
     }
 
     const orderId = data.item_name;
+    const paidAmount = parseFloat(data.amount_gross);
 
     // ==========================
-    // 🧠 FETCH ORDER
+    // 🧠 FETCH ORDER (FIXED)
     // ==========================
     const { data: order, error } = await supabase
       .from("orders")
       .select("*")
-      .eq("id", orderId)
+      .eq("order_id", orderId) // ✅ FIXED
       .single();
 
     if (!order || error) {
+      console.error("❌ Order not found:", orderId);
       return res.status(400).send("Order not found");
     }
 
     // 🚫 BLOCK DUPLICATES
     if (order.fulfilled) {
+      console.log("⚠️ Already fulfilled:", orderId);
       return res.status(200).send("Already fulfilled");
     }
 
@@ -75,16 +99,30 @@ export default async function handler(req, res) {
     // ==========================
     // 💰 VERIFY AMOUNT
     // ==========================
-    const paidAmount = parseFloat(data.amount_gross);
-
     const expectedAmount = cart.reduce(
       (sum, i) => sum + i.price * i.quantity,
       0
     );
 
     if (Math.abs(expectedAmount - paidAmount) > 1) {
+      console.error("❌ Amount mismatch", { expectedAmount, paidAmount });
       return res.status(400).send("Amount mismatch");
     }
+
+    console.log("✅ Payment verified:", orderId);
+
+    // ==========================
+    // 🧾 UPDATE PAYMENT STATUS
+    // ==========================
+    await supabase
+      .from("orders")
+      .update({
+        payment_status: "paid",
+        status: "paid",
+        payfast_payment_id: data.pf_payment_id,
+        payfast_status: data.payment_status
+      })
+      .eq("order_id", orderId);
 
     // ==========================
     // 🚚 SEND ORDER (WITH RETRY)
@@ -134,14 +172,17 @@ export default async function handler(req, res) {
     await supabase
       .from("orders")
       .update({
-        fulfilled: true
+        fulfilled: true,
+        fulfillment_status: "fulfilled"
       })
-      .eq("id", orderId);
+      .eq("order_id", orderId);
+
+    console.log("🎉 Order completed:", orderId);
 
     return res.status(200).send("OK");
 
   } catch (err) {
-    console.error("ITN ERROR:", err);
+    console.error("🔥 ITN ERROR:", err);
     return res.status(500).send("Error");
   }
-}
+      }
