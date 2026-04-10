@@ -1,4 +1,19 @@
 // ==========================
+// 🌍 GEO DETECTION
+// ==========================
+let userCountry = "ZA";
+
+async function detectCountry() {
+  try {
+    const res = await fetch("https://ipapi.co/json/");
+    const data = await res.json();
+    userCountry = data.country_code || "ZA";
+  } catch {
+    userCountry = "ZA";
+  }
+}
+
+// ==========================
 // 🧠 STATE
 // ==========================
 let cart = JSON.parse(localStorage.getItem("lunaraCart")) || [];
@@ -6,7 +21,7 @@ let favorites = JSON.parse(localStorage.getItem("lunaraFavorites")) || [];
 let storeProducts = [];
 
 // ==========================
-// 🧾 FALLBACK PRODUCTS (LOCAL)
+// 🧾 FALLBACK PRODUCTS
 // ==========================
 const fallbackProducts = [
   {
@@ -70,7 +85,6 @@ function displayProducts(products) {
     const stock = Math.floor(Math.random() * 6) + 3;
     const reviews = Math.floor(Math.random() * 1500) + 300;
     const isFav = favorites.includes(product.id);
-
     const image = product.image || "images/placeholder.png";
 
     const card = document.createElement("div");
@@ -135,9 +149,8 @@ function addToCart(index, event) {
   const product = storeProducts[index];
   const size = document.getElementById(`size-${index}`)?.value || "M";
 
-  // 🚨 Prevent checkout if fallback product
-  if (!product.productId) {
-    alert("This product is currently unavailable for checkout.");
+  if (!product.printify && !product.prodigi) {
+    alert("This product is currently unavailable.");
     return;
   }
 
@@ -154,8 +167,10 @@ function addToCart(index, event) {
       price: product.price,
       size,
       quantity: 1,
-      productId: product.productId,
-      variantId: product.variantId
+
+      // 🔥 BOTH SUPPLIERS
+      printify: product.printify,
+      prodigi: product.prodigi
     });
   }
 
@@ -240,7 +255,7 @@ function closeCart() {
 }
 
 // ==========================
-// 💳 CHECKOUT (PAYFAST)
+// 💳 CHECKOUT
 // ==========================
 async function checkout() {
 
@@ -249,12 +264,14 @@ async function checkout() {
     return;
   }
 
+  const supplier = userCountry === "ZA" ? "prodigi" : "printify";
+
   const firstName = document.getElementById("customer-first-name").value;
   const lastName = document.getElementById("customer-last-name").value;
   const email = document.getElementById("customer-email").value;
 
   if (!firstName || !lastName || !email) {
-    alert("Please fill in your name and email.");
+    alert("Please fill in your details.");
     return;
   }
 
@@ -281,6 +298,7 @@ async function checkout() {
       email,
       amount: total,
       cart,
+      supplier, // 🔥 routing
       address1,
       city,
       region,
@@ -296,7 +314,7 @@ async function checkout() {
 }
 
 // ==========================
-// 📦 LOAD PRODUCTS (PRINTIFY + FALLBACK)
+// 📦 LOAD PRODUCTS
 // ==========================
 async function loadProducts() {
   if (productsContainer) {
@@ -319,8 +337,18 @@ async function loadProducts() {
         category: "all",
         price: variant.price / 100,
         image: product.images[0]?.src,
-        productId: product.id,
-        variantId: variant.id
+
+        // 🔥 PRINTIFY
+        printify: {
+          productId: product.id,
+          variantId: variant.id
+        },
+
+        // 🔥 PRODIGI (YOU MUST MAP)
+        prodigi: {
+          sku: "REPLACE_ME",
+          variant: "REPLACE_ME"
+        }
       };
     });
 
@@ -328,17 +356,15 @@ async function loadProducts() {
     updateCart();
 
   } catch (err) {
-    console.error("Printify failed, using fallback products", err);
-
+    console.error("Fallback triggered", err);
     storeProducts = fallbackProducts;
-
     displayProducts(storeProducts);
     updateCart();
   }
 }
 
 // ==========================
-// 🧊 HEADER SHRINK
+// 🧊 HEADER
 // ==========================
 window.addEventListener("scroll", () => {
   const header = document.querySelector(".site-header");
@@ -353,5 +379,10 @@ window.addEventListener("scroll", () => {
 // ==========================
 // 🚀 INIT
 // ==========================
-loadProducts();
-updateCart();
+async function init() {
+  await detectCountry();
+  await loadProducts();
+  updateCart();
+}
+
+init();
