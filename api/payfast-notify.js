@@ -1,9 +1,10 @@
 import crypto from "crypto";
 import { Resend } from "resend";
+import { sendToProdigi } from "../lib/prodigi.js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Prevent duplicate orders (basic memory cache)
+// Prevent duplicate orders
 const processedOrders = new Set();
 
 // --- HELPERS ---
@@ -74,80 +75,101 @@ export default async function handler(req, res) {
       return res.status(400).send("Empty cart");
     }
 
-    // 📦 BUILD PRINTIFY ITEMS
-    const line_items = cart.map(item => ({
-      product_id: item.productId,
-      variant_id: Number(item.variantId),
-      quantity: Number(item.quantity || 1)
-    }));
+    // 🌍 DETECT COUNTRY
+    const country =
+      req.headers["x-vercel-ip-country"] ||
+      body.custom_str7 ||
+      "UNKNOWN";
 
-    const orderPayload = {
-      external_id: body.m_payment_id,
-      line_items,
-      address_to: {
-        first_name: body.name_first,
-        last_name: body.name_last,
-        email: body.email_address,
-        phone: body.custom_str8,
-        country: body.custom_str7,
-        region: body.custom_str5,
-        address1: body.custom_str3,
-        city: body.custom_str4,
-        zip: body.custom_str6
-      },
-      shipping_method: 1,
-      send_shipping_notification: true
-    };
+    console.log("🌍 Country:", country);
 
-    // 🚀 SEND TO PRINTIFY
-    const response = await fetch(
-      `https://api.printify.com/v1/shops/${process.env.PRINTIFY_SHOP_ID}/orders.json`,
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.PRINTIFY_API_TOKEN}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(orderPayload)
+    let result;
+    let providerUsed;
+
+    // =========================
+    // 🇿🇦 PRODIGI (PRIMARY FOR SA)
+    // =========================
+    if (country === "ZA") {
+      try {
+        console.log("Using PRODIGI 🇿🇦");
+
+        // 🔥 BUILD PRODIGI ORDER
+        const prodigiOrder = {
+          email: body.email_address,
+          shipping: {
+            firstName: body.name_first,
+            lastName: body.name_last,
+            address1: body.custom_str3,
+            city: body.custom_str4,
+            zip: body.custom_str6,
+            country: body.custom_str7
+          },
+          items: cart.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            prodigiSku: item.prodigiSku,
+            designUrl: item.designUrl,
+            printArea: item.printArea || "front"
+          }))
+        };
+
+        result = await sendToProdigi(prodigiOrder);
+        providerUsed = "PRODIGI";
+
+      } catch (err) {
+        console.log("❌ Prodigi failed → fallback Printify");
+
+        result = await sendToPrintify(body, cart);
+        providerUsed = "PRINTIFY_FALLBACK";
       }
-    );
 
-    if (!response.ok) {
-      const err = await response.text();
-      return res.status(500).send("Printify error: " + err);
+    } else {
+      // =========================
+      // 🌍 PRINTIFY (DEFAULT)
+      // =========================
+      try {
+        console.log("Using PRINTIFY 🌍");
+
+        result = await sendToPrintify(body, cart);
+        providerUsed = "PRINTIFY";
+
+      } catch (err) {
+        console.log("❌ Printify failed → fallback Prodigi");
+
+        const prodigiOrder = {
+          email: body.email_address,
+          shipping: {
+            firstName: body.name_first,
+            lastName: body.name_last,
+            address1: body.custom_str3,
+            city: body.custom_str4,
+            zip: body.custom_str6,
+            country: body.custom_str7
+          },
+          items: cart.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            prodigiSku: item.prodigiSku,
+            designUrl: item.designUrl,
+            printArea: item.printArea || "front"
+          }))
+        };
+
+        result = await sendToProdigi(prodigiOrder);
+        providerUsed = "PRODIGI_FALLBACK";
+      }
     }
 
-    // ✉️ SEND EMAIL (SAFE)
+    // ✉️ EMAIL
     try {
       await resend.emails.send({
         from: "Lunara <onboarding@resend.dev>",
         to: body.email_address,
         subject: "🌙 Your Lunara Order is Confirmed",
-        html: `
-          <div style="font-family: Arial; padding:20px;">
-            <h2>Order Confirmed 🌙</h2>
-
-            <p>Hi ${body.name_first},</p>
-
-            <p>Your order is officially being processed.</p>
-
-            <p><strong>Order ID:</strong> ${body.m_payment_id}</p>
-
-            <p>You’ll receive tracking details once shipped.</p>
-
-            <br>
-
-            <a href="https://lunara-store-tau.vercel.app/track.html?orderId=${body.m_payment_id}"
-              style="background:#b98cff;padding:12px 20px;color:#000;text-decoration:none;border-radius:8px;">
-              Track Order
-            </a>
-
-            <p style="margin-top:30px;">– Lunara</p>
-          </div>
-        `
+        html: `<p>Your order is being processed via ${providerUsed}</p>`
       });
-    } catch (emailError) {
-      console.error("Email failed:", emailError);
+    } catch (e) {
+      console.error("Email failed:", e);
     }
 
     return res.status(200).send("Order processed");
@@ -156,3 +178,48 @@ export default async function handler(req, res) {
     return res.status(500).send("Server error: " + err.message);
   }
 }
+
+// 🔥 PRINTIFY FUNCTION (EXTRACTED)
+async function sendToPrintify(body, cart) {
+  const line_items = cart.map(item => ({
+    product_id: item.productId,
+    variant_id: Number(item.variantId),
+    quantity: Number(item.quantity || 1)
+  }));
+
+  const orderPayload = {
+    external_id: body.m_payment_id,
+    line_items,
+    address_to: {
+      first_name: body.name_first,
+      last_name: body.name_last,
+      email: body.email_address,
+      phone: body.custom_str8,
+      country: body.custom_str7,
+      region: body.custom_str5,
+      address1: body.custom_str3,
+      city: body.custom_str4,
+      zip: body.custom_str6
+    },
+    shipping_method: 1,
+    send_shipping_notification: true
+  };
+
+  const response = await fetch(
+    `https://api.printify.com/v1/shops/${process.env.PRINTIFY_SHOP_ID}/orders.json`,
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.PRINTIFY_API_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(orderPayload)
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Printify failed");
+  }
+
+  return response.json();
+          }
