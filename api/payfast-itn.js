@@ -1,19 +1,81 @@
+import crypto from "crypto";
+
+let processedOrders = new Set(); // prevent duplicates
+
 export default async function handler(req, res) {
   try {
     const data = req.body;
 
-    const paymentStatus = data.payment_status;
-    const orderId = data.item_name;
+    console.log("🔔 PayFast ITN received");
 
-    console.log("PayFast ITN:", data);
+    // ==========================
+    // 🔐 STEP 1: VALIDATE SIGNATURE
+    // ==========================
+    const passphrase = process.env.PAYFAST_PASSPHRASE || "";
 
-    // ✅ Only continue if payment is COMPLETE
-    if (paymentStatus !== "COMPLETE") {
-      return res.status(200).send("Ignored");
+    const pfData = { ...data };
+    const receivedSignature = pfData.signature;
+    delete pfData.signature;
+
+    const sortedKeys = Object.keys(pfData).sort();
+
+    const queryString = sortedKeys
+      .map(key => `${key}=${encodeURIComponent(pfData[key]).replace(/%20/g, "+")}`)
+      .join("&");
+
+    const signatureString = passphrase
+      ? `${queryString}&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, "+")}`
+      : queryString;
+
+    const generatedSignature = crypto
+      .createHash("md5")
+      .update(signatureString)
+      .digest("hex");
+
+    if (generatedSignature !== receivedSignature) {
+      console.error("❌ Invalid signature");
+      return res.status(400).send("Invalid signature");
     }
 
     // ==========================
-    // 🧠 GET STORED ORDER
+    // 🌐 STEP 2: VERIFY WITH PAYFAST
+    // ==========================
+    const verifyRes = await fetch("https://www.payfast.co.za/eng/query/validate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: queryString
+    });
+
+    const verifyText = await verifyRes.text();
+
+    if (verifyText !== "VALID") {
+      console.error("❌ PayFast validation failed");
+      return res.status(400).send("Validation failed");
+    }
+
+    // ==========================
+    // 💳 STEP 3: CHECK PAYMENT STATUS
+    // ==========================
+    if (data.payment_status !== "COMPLETE") {
+      console.log("⏳ Payment not complete");
+      return res.status(200).send("Ignored");
+    }
+
+    const orderId = data.item_name;
+    const paidAmount = parseFloat(data.amount_gross);
+
+    // ==========================
+    // 🚫 STEP 4: PREVENT DUPLICATES
+    // ==========================
+    if (processedOrders.has(orderId)) {
+      console.log("⚠️ Duplicate order blocked:", orderId);
+      return res.status(200).send("Duplicate ignored");
+    }
+
+    // ==========================
+    // 🧠 STEP 5: GET ORDER DATA
     // ==========================
     const orderRes = await fetch(`${req.headers.origin}/api/get-order`, {
       method: "POST",
@@ -26,19 +88,31 @@ export default async function handler(req, res) {
     const order = await orderRes.json();
 
     if (!order) {
-      console.error("Order not found:", orderId);
+      console.error("❌ Order not found:", orderId);
       return res.status(400).send("Order not found");
     }
 
     const { supplier, cart, customer } = order;
 
-    console.log("Processing paid order:", orderId, supplier);
+    // ==========================
+    // 💰 STEP 6: VERIFY AMOUNT
+    // ==========================
+    const expectedAmount = cart.reduce(
+      (sum, i) => sum + i.price * i.quantity,
+      0
+    );
+
+    if (Math.abs(expectedAmount - paidAmount) > 1) {
+      console.error("❌ Amount mismatch", { expectedAmount, paidAmount });
+      return res.status(400).send("Amount mismatch");
+    }
+
+    console.log("✅ Payment verified:", orderId);
 
     // ==========================
-    // 🚚 SEND TO SUPPLIER
+    // 🚚 STEP 7: SEND ORDER
     // ==========================
     if (supplier === "prodigi") {
-
       await fetch(`${req.headers.origin}/api/prodigi-orders`, {
         method: "POST",
         headers: {
@@ -50,9 +124,7 @@ export default async function handler(req, res) {
           customer
         })
       });
-
     } else {
-
       await fetch(`${req.headers.origin}/api/printify-orders`, {
         method: "POST",
         headers: {
@@ -76,10 +148,17 @@ export default async function handler(req, res) {
       });
     }
 
+    // ==========================
+    // ✅ MARK AS PROCESSED
+    // ==========================
+    processedOrders.add(orderId);
+
+    console.log("🎉 Order completed:", orderId);
+
     return res.status(200).send("OK");
 
   } catch (err) {
-    console.error("ITN error:", err);
+    console.error("🔥 ITN ERROR:", err);
     return res.status(500).send("Error");
   }
-}
+                                          }
