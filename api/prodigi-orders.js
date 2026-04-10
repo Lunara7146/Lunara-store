@@ -1,26 +1,32 @@
+// /api/prodigi-orders.js
+
+import { sendToProdigi } from "../lib/prodigi.js";
+
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
   try {
-    const { orderId, items, customer } = req.body;
+    const order = req.body;
 
-    // ⚠️ TEMP PLACEHOLDER (no real SKUs yet)
-    console.log("Prodigi order received:", {
-      orderId,
-      items,
-      customer
-    });
+    // ✅ VALIDATION
+    for (const item of order.items) {
+      if (!item.designUrl) {
+        return res.status(400).json({
+          error: `Missing designUrl for ${item.name}`
+        });
+      }
+    }
 
-    // 🔥 This will be replaced later with real Prodigi API call
+    const result = await sendToProdigi(order);
+
     return res.status(200).json({
       success: true,
-      message: "Prodigi order simulated (no real product yet)"
+      provider: "PRODIGI",
+      result
     });
 
-  } catch (err) {
-    console.error("Prodigi error:", err);
-    res.status(500).json({ error: "Prodigi order failed" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      error: "Prodigi order failed"
+    });
   }
 }
