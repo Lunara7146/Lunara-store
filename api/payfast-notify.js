@@ -1,13 +1,16 @@
 import crypto from "crypto";
 import { Resend } from "resend";
 import { sendToProdigi } from "../lib/prodigi.js";
+import { supabase } from "../lib/supabase.js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Prevent duplicate orders
+// ⚠️ NOTE: This resets on server restart (OK for now)
 const processedOrders = new Set();
 
-// --- HELPERS ---
+// ==========================
+// 🔐 SIGNATURE HELPERS
+// ==========================
 function encodeValue(value = "") {
   return encodeURIComponent(String(value).trim()).replace(/%20/g, "+");
 }
@@ -33,7 +36,9 @@ function generateSignature(data, passphrase = "") {
     .digest("hex");
 }
 
-// --- MAIN ---
+// ==========================
+// 🚀 MAIN HANDLER
+// ==========================
 export default async function handler(req, res) {
 
   if (req.method !== "POST") {
@@ -44,41 +49,62 @@ export default async function handler(req, res) {
     const body = req.body || {};
     const passphrase = process.env.PAYFAST_PASSPHRASE || "";
 
+    // ==========================
     // 🔐 VERIFY SIGNATURE
+    // ==========================
     const receivedSig = (body.signature || "").toLowerCase();
     const expectedSig = generateSignature(body, passphrase).toLowerCase();
 
     if (!receivedSig || receivedSig !== expectedSig) {
+      console.error("❌ Invalid signature");
       return res.status(400).send("Invalid signature");
     }
 
-    // ❌ Ignore unpaid
+    // ==========================
+    // ❌ IGNORE UNPAID
+    // ==========================
     if (body.payment_status !== "COMPLETE") {
       return res.status(200).send("Ignored");
     }
 
-    // ❌ Prevent duplicate processing
-    if (processedOrders.has(body.m_payment_id)) {
+    const orderId = body.m_payment_id;
+
+    // ==========================
+    // ❌ DUPLICATE PREVENTION
+    // ==========================
+    if (processedOrders.has(orderId)) {
       return res.status(200).send("Already processed");
     }
-    processedOrders.add(body.m_payment_id);
+    processedOrders.add(orderId);
 
-    // 🛒 PARSE CART
-    let cart = [];
-    try {
-      cart = JSON.parse(body.custom_str1 || "[]");
-    } catch {
-      return res.status(400).send("Invalid cart");
+    // ==========================
+    // 🧠 LOAD ORDER FROM SUPABASE
+    // ==========================
+    const { data: orderData, error: fetchError } = await supabase
+      .from("orders")
+      .select("*")
+      .eq("order_id", orderId)
+      .single();
+
+    if (fetchError || !orderData) {
+      console.error("❌ Order not found in DB");
+      return res.status(404).send("Order not found");
     }
+
+    const cart = orderData.cart || [];
 
     if (!cart.length) {
       return res.status(400).send("Empty cart");
     }
 
-    // 🌍 DETECT COUNTRY
+    const customer = orderData.customer || {};
+
+    // ==========================
+    // 🌍 COUNTRY DETECTION
+    // ==========================
     const country =
       req.headers["x-vercel-ip-country"] ||
-      body.custom_str7 ||
+      customer.country ||
       "UNKNOWN";
 
     console.log("🌍 Country:", country);
@@ -86,30 +112,29 @@ export default async function handler(req, res) {
     let result;
     let providerUsed;
 
-    // =========================
-    // 🇿🇦 PRODIGI (PRIMARY FOR SA)
-    // =========================
+    // ==========================
+    // 🇿🇦 PRODIGI FIRST
+    // ==========================
     if (country === "ZA") {
       try {
         console.log("Using PRODIGI 🇿🇦");
 
-        // 🔥 BUILD PRODIGI ORDER
         const prodigiOrder = {
-          email: body.email_address,
+          email: orderData.email,
           shipping: {
-            firstName: body.name_first,
-            lastName: body.name_last,
-            address1: body.custom_str3,
-            city: body.custom_str4,
-            zip: body.custom_str6,
-            country: body.custom_str7
+            firstName: customer.firstName,
+            lastName: customer.lastName,
+            address1: customer.address1,
+            city: customer.city,
+            zip: customer.zip,
+            country: customer.country
           },
           items: cart.map(item => ({
             name: item.name,
             quantity: item.quantity,
-            prodigiSku: item.prodigiSku,
-            designUrl: item.designUrl,
-            printArea: item.printArea || "front"
+            prodigiSku: item.prodigi?.sku,
+            designUrl: item.prodigi?.designUrl,
+            printArea: item.prodigi?.printArea || "front"
           }))
         };
 
@@ -117,41 +142,41 @@ export default async function handler(req, res) {
         providerUsed = "PRODIGI";
 
       } catch (err) {
-        console.log("❌ Prodigi failed → fallback Printify");
+        console.error("❌ Prodigi failed → fallback Printify");
 
-        result = await sendToPrintify(body, cart);
+        result = await sendToPrintify(orderData);
         providerUsed = "PRINTIFY_FALLBACK";
       }
 
     } else {
-      // =========================
-      // 🌍 PRINTIFY (DEFAULT)
-      // =========================
+      // ==========================
+      // 🌍 PRINTIFY DEFAULT
+      // ==========================
       try {
         console.log("Using PRINTIFY 🌍");
 
-        result = await sendToPrintify(body, cart);
+        result = await sendToPrintify(orderData);
         providerUsed = "PRINTIFY";
 
       } catch (err) {
-        console.log("❌ Printify failed → fallback Prodigi");
+        console.error("❌ Printify failed → fallback Prodigi");
 
         const prodigiOrder = {
-          email: body.email_address,
+          email: orderData.email,
           shipping: {
-            firstName: body.name_first,
-            lastName: body.name_last,
-            address1: body.custom_str3,
-            city: body.custom_str4,
-            zip: body.custom_str6,
-            country: body.custom_str7
+            firstName: customer.firstName,
+            lastName: customer.lastName,
+            address1: customer.address1,
+            city: customer.city,
+            zip: customer.zip,
+            country: customer.country
           },
           items: cart.map(item => ({
             name: item.name,
             quantity: item.quantity,
-            prodigiSku: item.prodigiSku,
-            designUrl: item.designUrl,
-            printArea: item.printArea || "front"
+            prodigiSku: item.prodigi?.sku,
+            designUrl: item.prodigi?.designUrl,
+            printArea: item.prodigi?.printArea || "front"
           }))
         };
 
@@ -160,13 +185,32 @@ export default async function handler(req, res) {
       }
     }
 
-    // ✉️ EMAIL
+    // ==========================
+    // 🧠 UPDATE ORDER STATUS
+    // ==========================
+    await supabase
+      .from("orders")
+      .update({
+        status: "paid",
+        provider: providerUsed,
+        fulfillment_response: result
+      })
+      .eq("order_id", orderId);
+
+    // ==========================
+    // ✉️ EMAIL CONFIRMATION
+    // ==========================
     try {
       await resend.emails.send({
         from: "Lunara <onboarding@resend.dev>",
-        to: body.email_address,
+        to: orderData.email,
         subject: "🌙 Your Lunara Order is Confirmed",
-        html: `<p>Your order is being processed via ${providerUsed}</p>`
+        html: `
+          <h2>Order Confirmed</h2>
+          <p>Order ID: ${orderId}</p>
+          <p>Provider: ${providerUsed}</p>
+          <p>Your order is now being processed.</p>
+        `
       });
     } catch (e) {
       console.error("Email failed:", e);
@@ -175,31 +219,38 @@ export default async function handler(req, res) {
     return res.status(200).send("Order processed");
 
   } catch (err) {
+    console.error("🔥 SERVER ERROR:", err);
     return res.status(500).send("Server error: " + err.message);
   }
 }
 
-// 🔥 PRINTIFY FUNCTION (EXTRACTED)
-async function sendToPrintify(body, cart) {
+// ==========================
+// 🖨️ PRINTIFY FUNCTION
+// ==========================
+async function sendToPrintify(orderData) {
+
+  const cart = orderData.cart || [];
+  const customer = orderData.customer || {};
+
   const line_items = cart.map(item => ({
-    product_id: item.productId,
-    variant_id: Number(item.variantId),
+    product_id: item.printify?.productId,
+    variant_id: Number(item.printify?.variantId),
     quantity: Number(item.quantity || 1)
   }));
 
   const orderPayload = {
-    external_id: body.m_payment_id,
+    external_id: orderData.order_id,
     line_items,
     address_to: {
-      first_name: body.name_first,
-      last_name: body.name_last,
-      email: body.email_address,
-      phone: body.custom_str8,
-      country: body.custom_str7,
-      region: body.custom_str5,
-      address1: body.custom_str3,
-      city: body.custom_str4,
-      zip: body.custom_str6
+      first_name: customer.firstName,
+      last_name: customer.lastName,
+      email: orderData.email,
+      phone: customer.phone,
+      country: customer.country,
+      region: customer.region,
+      address1: customer.address1,
+      city: customer.city,
+      zip: customer.zip
     },
     shipping_method: 1,
     send_shipping_notification: true
@@ -210,16 +261,19 @@ async function sendToPrintify(body, cart) {
     {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.PRINTIFY_API_TOKEN}`,
+        Authorization: `Bearer ${process.env.PRINTIFY_API_TOKEN}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify(orderPayload)
     }
   );
 
+  const data = await response.json();
+
   if (!response.ok) {
+    console.error("❌ Printify error:", data);
     throw new Error("Printify failed");
   }
 
-  return response.json();
-          }
+  return data;
+}
