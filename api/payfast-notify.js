@@ -7,7 +7,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const processedOrders = new Set();
 
 // ==========================
-// 🔐 SIGNATURE HELPERS
+// 🔐 SIGNATURE
 // ==========================
 function encodeValue(value = "") {
   return encodeURIComponent(String(value).trim()).replace(/%20/g, "+");
@@ -47,6 +47,7 @@ export default async function handler(req, res) {
     const body = req.body || {};
     const passphrase = process.env.PAYFAST_PASSPHRASE || "";
 
+    // 🔐 VERIFY SIGNATURE
     const receivedSig = (body.signature || "").toLowerCase();
     const expectedSig = generateSignature(body, passphrase).toLowerCase();
 
@@ -54,12 +55,14 @@ export default async function handler(req, res) {
       return res.status(400).send("Invalid signature");
     }
 
+    // ❌ Ignore unpaid
     if (body.payment_status !== "COMPLETE") {
       return res.status(200).send("Ignored");
     }
 
     const orderId = body.m_payment_id;
 
+    // ❌ Prevent duplicates
     if (processedOrders.has(orderId)) {
       return res.status(200).send("Already processed");
     }
@@ -86,19 +89,23 @@ export default async function handler(req, res) {
       customer.country ||
       "UNKNOWN";
 
-    console.log("🌍 Country:", country);
-
     const isSA = country === "ZA";
 
     // ==========================
-    // 🧠 SPLIT CART (TYPE-BASED)
+    // 🧠 SPLIT CART (SAFE)
     // ==========================
     const prodigiItems = cart.filter(item =>
-      isSA && (item.type === "hoodie" || item.type === "tshirt")
+      isSA &&
+      (item.type === "hoodie" || item.type === "tshirt") &&
+      item.prodigi?.sku
     );
 
     const printifyItems = cart.filter(item =>
-      !(isSA && (item.type === "hoodie" || item.type === "tshirt"))
+      !(
+        isSA &&
+        (item.type === "hoodie" || item.type === "tshirt") &&
+        item.prodigi?.sku
+      )
     );
 
     let results = [];
@@ -108,8 +115,6 @@ export default async function handler(req, res) {
     // ==========================
     if (prodigiItems.length) {
       try {
-        console.log("🇿🇦 Prodigi items:", prodigiItems.length);
-
         const prodigiOrder = {
           email: orderData.email,
           shipping: {
@@ -123,9 +128,9 @@ export default async function handler(req, res) {
           items: prodigiItems.map(item => ({
             name: item.name,
             quantity: item.quantity,
-            prodigiSku: item.prodigi?.sku,
-            designUrl: item.prodigi?.designUrl,
-            printArea: item.prodigi?.printArea || "front"
+            prodigiSku: item.prodigi.sku,
+            designUrl: item.prodigi.designUrl,
+            printArea: item.prodigi.printArea || "front"
           }))
         };
 
@@ -133,7 +138,10 @@ export default async function handler(req, res) {
         results.push({ provider: "PRODIGI", result });
 
       } catch (err) {
-        console.error("❌ Prodigi failed:", err);
+        console.error("❌ Prodigi failed → fallback to Printify");
+
+        // 🔥 FALLBACK
+        printifyItems.push(...prodigiItems);
       }
     }
 
@@ -142,15 +150,18 @@ export default async function handler(req, res) {
     // ==========================
     if (printifyItems.length) {
       try {
-        console.log("🌍 Printify items:", printifyItems.length);
+        const safeItems = printifyItems.filter(item =>
+          item.printify?.productId && item.printify?.variantId
+        );
 
-        const printifyOrder = {
-          ...orderData,
-          cart: printifyItems
-        };
+        if (safeItems.length) {
+          const result = await sendToPrintify({
+            ...orderData,
+            cart: safeItems
+          });
 
-        const result = await sendToPrintify(printifyOrder);
-        results.push({ provider: "PRINTIFY", result });
+          results.push({ provider: "PRINTIFY", result });
+        }
 
       } catch (err) {
         console.error("❌ Printify failed:", err);
@@ -160,11 +171,16 @@ export default async function handler(req, res) {
     // ==========================
     // 🧠 UPDATE ORDER
     // ==========================
+    const providerUsed =
+      results.length > 1
+        ? "SPLIT"
+        : results[0]?.provider || "FAILED";
+
     await supabase
       .from("orders")
       .update({
         status: "paid",
-        provider: results.length > 1 ? "SPLIT" : results[0]?.provider || "UNKNOWN",
+        provider: providerUsed,
         fulfillment_response: results
       })
       .eq("order_id", orderId);
@@ -172,16 +188,20 @@ export default async function handler(req, res) {
     // ==========================
     // ✉️ EMAIL
     // ==========================
-    await resend.emails.send({
-      from: "Lunara <onboarding@resend.dev>",
-      to: orderData.email,
-      subject: "🌙 Your Lunara Order is Confirmed",
-      html: `
-        <h2>Order Confirmed</h2>
-        <p>Order ID: ${orderId}</p>
-        <p>Provider: ${results.map(r => r.provider).join(", ")}</p>
-      `
-    });
+    try {
+      await resend.emails.send({
+        from: "Lunara <onboarding@resend.dev>",
+        to: orderData.email,
+        subject: "🌙 Your Lunara Order is Confirmed",
+        html: `
+          <h2>Order Confirmed</h2>
+          <p>Order ID: ${orderId}</p>
+          <p>Provider: ${providerUsed}</p>
+        `
+      });
+    } catch (e) {
+      console.error("Email failed:", e);
+    }
 
     return res.status(200).send("Order processed");
 
@@ -200,8 +220,8 @@ async function sendToPrintify(orderData) {
   const customer = orderData.customer || {};
 
   const line_items = cart.map(item => ({
-    product_id: item.printify?.productId,
-    variant_id: Number(item.printify?.variantId),
+    product_id: item.printify.productId,
+    variant_id: Number(item.printify.variantId),
     quantity: Number(item.quantity || 1)
   }));
 
@@ -236,6 +256,7 @@ async function sendToPrintify(orderData) {
   const data = await response.json();
 
   if (!response.ok) {
+    console.error("❌ Printify error:", data);
     throw new Error("Printify failed");
   }
 
