@@ -21,36 +21,6 @@ let favorites = JSON.parse(localStorage.getItem("lunaraFavorites")) || [];
 let storeProducts = [];
 
 // ==========================
-// 🧾 FALLBACK PRODUCTS
-// ==========================
-const fallbackProducts = [
-  {
-    id: "butterfly-hoodie-black",
-    name: "Butterfly Hoodie (Black)",
-    price: 599,
-    image: "images/hoodies/butterfly-hoodie-black.png"
-  },
-  {
-    id: "cosmic-eye-hoodie-black",
-    name: "Cosmic Eye Hoodie (Black)",
-    price: 599,
-    image: "images/hoodies/cosmic-eye-hoodie-black.png"
-  },
-  {
-    id: "drip-smile-tee-black",
-    name: "Drip Smile Tee (Black)",
-    price: 299,
-    image: "images/shirts/drip-smile-tee-black.png"
-  },
-  {
-    id: "cosmic-butterfly-pants-black",
-    name: "Cosmic Butterfly Pants",
-    price: 499,
-    image: "images/pants/cosmic-butterfly-pants-black.png"
-  }
-];
-
-// ==========================
 // ⚙️ HELPERS
 // ==========================
 function saveCart() {
@@ -85,14 +55,13 @@ function displayProducts(products) {
     const stock = Math.floor(Math.random() * 6) + 3;
     const reviews = Math.floor(Math.random() * 1500) + 300;
     const isFav = favorites.includes(product.id);
-    const image = product.image || "images/placeholder.png";
 
     const card = document.createElement("div");
     card.className = "product-card";
 
     card.innerHTML = `
       <div class="product-image-wrap">
-        <img src="${image}" class="product-image" alt="${product.name}">
+        <img src="${product.image}" class="product-image" alt="${product.name}">
       </div>
 
       <div class="product-info">
@@ -143,7 +112,7 @@ function toggleFavorite(id, el) {
 }
 
 // ==========================
-// 🛒 ADD TO CART
+// 🛒 ADD TO CART (FIXED)
 // ==========================
 function addToCart(index, event) {
   const product = storeProducts[index];
@@ -168,7 +137,8 @@ function addToCart(index, event) {
       size,
       quantity: 1,
 
-      // 🔥 BOTH SUPPLIERS
+      // 🔥 CRITICAL DATA
+      type: product.type,
       printify: product.printify,
       prodigi: product.prodigi
     });
@@ -246,16 +216,13 @@ function removeFromCart(index) {
 // ==========================
 function openCart() {
   document.getElementById("cart-panel")?.classList.add("open");
-  document.body.classList.add("cart-open");
 }
-
 function closeCart() {
   document.getElementById("cart-panel")?.classList.remove("open");
-  document.body.classList.remove("cart-open");
 }
 
 // ==========================
-// 💳 CHECKOUT
+// 💳 CHECKOUT (FIXED)
 // ==========================
 async function checkout() {
 
@@ -263,8 +230,6 @@ async function checkout() {
     alert("Your cart is empty.");
     return;
   }
-
-  const supplier = userCountry === "ZA" ? "prodigi" : "printify";
 
   const firstName = document.getElementById("customer-first-name").value;
   const lastName = document.getElementById("customer-last-name").value;
@@ -297,8 +262,7 @@ async function checkout() {
       lastName,
       email,
       amount: total,
-      cart,
-      supplier, // 🔥 routing
+      cart, // 🔥 FULL CART SENT
       address1,
       city,
       region,
@@ -314,7 +278,7 @@ async function checkout() {
 }
 
 // ==========================
-// 📦 LOAD PRODUCTS
+// 📦 LOAD PRODUCTS (FIXED)
 // ==========================
 async function loadProducts() {
   if (productsContainer) {
@@ -328,53 +292,18 @@ async function loadProducts() {
 
     const data = await res.json();
 
-    storeProducts = data.data.map(product => {
-      const variant = product.variants[0];
-
-      return {
-        id: product.id,
-        name: product.title,
-        category: "all",
-        price: variant.price / 100,
-        image: product.images[0]?.src,
-
-        // 🔥 PRINTIFY
-        printify: {
-          productId: product.id,
-          variantId: variant.id
-        },
-
-        // 🔥 PRODIGI (YOU MUST MAP)
-        prodigi: {
-          sku: "REPLACE_ME",
-          variant: "REPLACE_ME"
-        }
-      };
-    });
+    storeProducts = data.data; // 🔥 USE BACKEND DIRECTLY
 
     displayProducts(storeProducts);
     updateCart();
 
   } catch (err) {
     console.error("Fallback triggered", err);
-    storeProducts = fallbackProducts;
+    storeProducts = [];
     displayProducts(storeProducts);
     updateCart();
   }
 }
-
-// ==========================
-// 🧊 HEADER
-// ==========================
-window.addEventListener("scroll", () => {
-  const header = document.querySelector(".site-header");
-
-  if (window.scrollY > 50) {
-    header.classList.add("shrink");
-  } else {
-    header.classList.remove("shrink");
-  }
-});
 
 // ==========================
 // 🚀 INIT
