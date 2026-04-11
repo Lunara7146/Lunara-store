@@ -4,7 +4,62 @@
   <meta charset="UTF-8">
   <title>Track Your Order - Lunara</title>
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    .tracking-page {
+      max-width: 700px;
+      margin: auto;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .tracking-box {
+      background: #111;
+      border-radius: 16px;
+      padding: 30px;
+      margin-top: 20px;
+    }
+
+    .tracking-status {
+      display: flex;
+      justify-content: space-between;
+      margin: 30px 0;
+    }
+
+    .step {
+      flex: 1;
+      padding: 10px;
+      border-bottom: 3px solid #444;
+      font-size: 14px;
+    }
+
+    .step.active {
+      border-color: #fff;
+      font-weight: bold;
+    }
+
+    .shipment {
+      background: #1a1a1a;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 10px;
+      text-align: left;
+    }
+
+    .tracking-link {
+      display: inline-block;
+      margin-top: 8px;
+      color: #00d4ff;
+      text-decoration: underline;
+    }
+
+    .loading {
+      margin-top: 20px;
+      opacity: 0.7;
+    }
+  </style>
 </head>
+
 <body>
 
 <section class="tracking-page">
@@ -14,20 +69,90 @@
     <p><strong>Order ID:</strong> <span id="order-id"></span></p>
 
     <div class="tracking-status">
-      <div class="step active">Order Received</div>
-      <div class="step">In Production</div>
-      <div class="step">Shipped</div>
+      <div class="step" id="step-1">Order Received</div>
+      <div class="step" id="step-2">In Production</div>
+      <div class="step" id="step-3">Shipped</div>
     </div>
 
+    <div id="shipments"></div>
+
     <p class="tracking-note">
-      You will receive tracking updates via email once your order ships.
+      Tracking updates will appear here once your order is processed.
     </p>
+
+    <p class="loading" id="loading">Loading tracking...</p>
   </div>
 </section>
 
 <script>
-  const params = new URLSearchParams(window.location.search);
-  document.getElementById("order-id").innerText = params.get("orderId");
+const params = new URLSearchParams(window.location.search);
+const orderId = params.get("orderId");
+
+document.getElementById("order-id").innerText = orderId || "Not found";
+
+async function loadTracking() {
+  if (!orderId) return;
+
+  try {
+    const res = await fetch(`/api/track?id=${orderId}`);
+    const data = await res.json();
+
+    document.getElementById("loading").style.display = "none";
+
+    // ==========================
+    // 📊 STATUS UI
+    // ==========================
+    if (data.status === "pending") {
+      activateStep(1);
+    } else if (data.status === "paid") {
+      activateStep(2);
+    } else if (data.status === "shipped") {
+      activateStep(3);
+    }
+
+    // ==========================
+    // 📦 SHIPMENTS (SPLIT SUPPORT)
+    // ==========================
+    const container = document.getElementById("shipments");
+    container.innerHTML = "";
+
+    if (!data.shipments || !data.shipments.length) {
+      container.innerHTML = "<p>No shipments yet.</p>";
+      return;
+    }
+
+    data.shipments.forEach(ship => {
+      const div = document.createElement("div");
+      div.className = "shipment";
+
+      div.innerHTML = `
+        <strong>${ship.provider}</strong><br>
+        Status: ${ship.status}<br>
+        ${ship.tracking 
+          ? `<a class="tracking-link" href="${ship.tracking}" target="_blank">Track Package →</a>`
+          : "Tracking not available yet"}
+      `;
+
+      container.appendChild(div);
+    });
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById("loading").innerText = "Failed to load tracking.";
+  }
+}
+
+function activateStep(step) {
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById(`step-${i}`).classList.remove("active");
+  }
+
+  for (let i = 1; i <= step; i++) {
+    document.getElementById(`step-${i}`).classList.add("active");
+  }
+}
+
+loadTracking();
 </script>
 
 </body>
