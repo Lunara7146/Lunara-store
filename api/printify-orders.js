@@ -1,21 +1,25 @@
+// /api/printify-orders.js
+
 function clean(value = "") {
   return String(value).trim();
 }
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      success: false,
+      error: "Method not allowed"
+    });
   }
 
   try {
-    const token = process.env.PRINTIFY_API_TOKEN;
+    const token = process.env.PRINTIFY_API_TOKEN; // ✅ FIXED
     const shopId = process.env.PRINTIFY_SHOP_ID;
-    const userAgent = process.env.PRINTIFY_USER_AGENT || "LunaraStore/1.0";
 
     if (!token || !shopId) {
       return res.status(500).json({
-        error: "Missing Printify environment variables",
-        required: ["PRINTIFY_API_TOKEN", "PRINTIFY_SHOP_ID"]
+        success: false,
+        error: "Missing Printify environment variables"
       });
     }
 
@@ -29,18 +33,26 @@ export default async function handler(req, res) {
 
     if (!external_id || !Array.isArray(line_items) || !line_items.length || !address_to) {
       return res.status(400).json({
-        error: "Missing required fields",
-        required: ["external_id", "line_items", "address_to"]
+        success: false,
+        error: "Missing required fields"
       });
     }
 
-    const payload = {
-      external_id: clean(external_id),
-      line_items: line_items.map((item) => ({
+    const safeLineItems = line_items.map(item => {
+      if (!item.product_id || !item.variant_id) {
+        throw new Error("Invalid line item");
+      }
+
+      return {
         product_id: clean(item.product_id),
         variant_id: Number(item.variant_id),
         quantity: Number(item.quantity || 1)
-      })),
+      };
+    });
+
+    const payload = {
+      external_id: clean(external_id),
+      line_items: safeLineItems,
       address_to: {
         first_name: clean(address_to.first_name),
         last_name: clean(address_to.last_name),
@@ -56,13 +68,14 @@ export default async function handler(req, res) {
       send_shipping_notification: Boolean(send_shipping_notification)
     };
 
+    console.log("📦 ORDER PAYLOAD:", payload);
+
     const response = await fetch(
       `https://api.printify.com/v1/shops/${shopId}/orders.json`,
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "User-Agent": userAgent,
           "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
@@ -72,15 +85,25 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
+      console.error("❌ PRINTIFY ERROR:", data);
+
       return res.status(response.status).json({
-        error: "Failed to create Printify order",
+        success: false,
+        error: "Failed to create order",
         details: data
       });
     }
 
-    return res.status(200).json(data);
+    return res.status(200).json({
+      success: true,
+      order: data
+    });
+
   } catch (error) {
+    console.error("🔥 SERVER ERROR:", error);
+
     return res.status(500).json({
+      success: false,
       error: "Server error",
       details: error.message
     });
