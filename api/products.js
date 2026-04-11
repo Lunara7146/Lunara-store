@@ -1,15 +1,6 @@
 // /api/products.js
 
-const customProductMap = {
-  // 🔥 OPTIONAL: map Printify → Prodigi
-  // Replace with real IDs later if needed
-
-  // "PRINTIFY_PRODUCT_ID": {
-  //   prodigiSku: "SKU",
-  //   designUrl: "https://yourdomain.com/design.png",
-  //   printArea: "front"
-  // }
-};
+const customProductMap = {};
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
@@ -22,7 +13,7 @@ export default async function handler(req, res) {
 
   try {
     const shopId = process.env.PRINTIFY_SHOP_ID;
-    const apiToken = process.env.PRINTIFY_API_KEY; // ✅ FIXED NAME
+    const apiToken = process.env.PRINTIFY_API_TOKEN; // ✅ FIXED
 
     if (!shopId || !apiToken) {
       return res.status(500).json({
@@ -53,10 +44,8 @@ export default async function handler(req, res) {
       });
     }
 
-    // ✅ SAFE DATA EXTRACTION
     const products = raw.data || [];
 
-    // 🔥 CLEAN + SAFE MAPPING
     const enhancedProducts = products.map(product => {
       const mapping = customProductMap[product.id] || {};
 
@@ -65,14 +54,9 @@ export default async function handler(req, res) {
       return {
         id: product.id,
         title: product.title || "Untitled Product",
-
-        // ✅ Only enabled variants
         variants: validVariants.length ? validVariants : product.variants || [],
-
-        // ✅ Safe images
         images: product.images || [],
 
-        // 🔥 Attach extra data
         prodigiSku: mapping.prodigiSku || null,
         designUrl: mapping.designUrl || null,
         printArea: mapping.printArea || "front"
@@ -94,4 +78,4 @@ export default async function handler(req, res) {
       details: error.message
     });
   }
-}
+          }
