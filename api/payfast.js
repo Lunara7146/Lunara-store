@@ -3,20 +3,28 @@
 import crypto from "crypto";
 import { supabase } from "../lib/supabase";
 
+// ==========================
+// 🔐 SIGNATURE GENERATOR
+// ==========================
 function generateSignature(data, passphrase = "") {
-  const sorted = Object.keys(data)
+  const filtered = Object.keys(data)
+    .filter(key => data[key] !== undefined && data[key] !== null && data[key] !== "")
     .sort()
     .map(key => `${key}=${encodeURIComponent(data[key]).replace(/%20/g, "+")}`)
     .join("&");
 
   const string = passphrase
-    ? `${sorted}&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, "+")}`
-    : sorted;
+    ? `${filtered}&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, "+")}`
+    : filtered;
 
   return crypto.createHash("md5").update(string).digest("hex");
 }
 
+// ==========================
+// 🚀 HANDLER
+// ==========================
 export default async function handler(req, res) {
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -28,7 +36,6 @@ export default async function handler(req, res) {
       email,
       amount,
       cart,
-      supplier,
       address1,
       city,
       region,
@@ -58,7 +65,6 @@ export default async function handler(req, res) {
         email,
         amount,
         status: "pending",
-        supplier,
         cart,
         customer: {
           firstName,
@@ -83,12 +89,17 @@ export default async function handler(req, res) {
     // ==========================
     const merchant_id = process.env.PAYFAST_MERCHANT_ID;
     const merchant_key = process.env.PAYFAST_MERCHANT_KEY;
-    const passphrase = process.env.PAYFAST_PASSPHRASE;
+    const passphrase = process.env.PAYFAST_PASSPHRASE || "";
     const baseUrl = process.env.BASE_URL;
 
-    if (!merchant_id || !merchant_key) {
+    if (!merchant_id || !merchant_key || !baseUrl) {
       return res.status(500).json({ error: "Missing PayFast config" });
     }
+
+    // ==========================
+    // 📦 SERIALIZE CART (CRITICAL)
+    // ==========================
+    const serializedCart = JSON.stringify(cart);
 
     // ==========================
     // 💳 PAYMENT DATA
@@ -96,6 +107,7 @@ export default async function handler(req, res) {
     const paymentData = {
       merchant_id,
       merchant_key,
+
       return_url: `${baseUrl}/success.html`,
       cancel_url: `${baseUrl}/cancel.html`,
       notify_url: `${baseUrl}/api/payfast-notify`,
@@ -106,7 +118,19 @@ export default async function handler(req, res) {
 
       m_payment_id: orderId,
       amount: Number(amount).toFixed(2),
-      item_name: `Order ${orderId}`
+      item_name: `Order ${orderId}`,
+
+      // ==========================
+      // 🔥 CRITICAL METADATA
+      // ==========================
+      custom_str1: serializedCart, // cart
+      custom_str2: orderId,
+      custom_str3: address1,
+      custom_str4: city,
+      custom_str5: region,
+      custom_str6: zip,
+      custom_str7: country,
+      custom_str8: phone
     };
 
     // ==========================
