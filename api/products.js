@@ -1,23 +1,6 @@
 // /api/products.js
 
-// ==========================
-// 🧠 CUSTOM PRODUCT MAPPING
-// ==========================
-const customProductMap = {
-  // 🔥 ADD YOUR REAL PRODUCTS HERE
-
-  /*
-  "PRINTIFY_PRODUCT_ID": {
-    type: "hoodie", // hoodie | tshirt | pants | other
-    prodigiSku: "GILDAN-18500-BLACK-M",
-    designUrl: "https://yourdomain.com/designs/hoodie.png",
-    printArea: "front"
-  }
-  */
-};
-
 export default async function handler(req, res) {
-
   if (req.method !== "GET") {
     return res.status(405).json({
       success: false,
@@ -38,9 +21,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // ==========================
-    // 📦 FETCH PRINTIFY PRODUCTS
-    // ==========================
     const response = await fetch(
       `https://api.printify.com/v1/shops/${shopId}/products.json`,
       {
@@ -64,88 +44,57 @@ export default async function handler(req, res) {
 
     const products = raw.data || [];
 
-    // ==========================
-    // 🔄 TRANSFORM PRODUCTS
-    // ==========================
     const enhancedProducts = products.map(product => {
-
-      const mapping = customProductMap[product.id] || {};
-
-      // ✅ Only enabled variants
-      const validVariants = (product.variants || []).filter(v => v.is_enabled);
-      const variant = validVariants[0] || product.variants?.[0];
-
-      // ==========================
-      // 🧠 DETECT TYPE (FALLBACK)
-      // ==========================
       const name = (product.title || "").toLowerCase();
 
-      let detectedType = "other";
+      let type = "other";
+      if (name.includes("hoodie")) type = "hoodie";
+      else if (name.includes("t-shirt") || name.includes("tee")) type = "tshirt";
 
-      if (name.includes("hoodie")) detectedType = "hoodie";
-      else if (name.includes("t-shirt") || name.includes("tee")) detectedType = "tshirt";
-      else if (name.includes("pants")) detectedType = "pants";
+      // ✅ BUILD VARIANT MAP
+      const variants = (product.variants || [])
+        .filter(v => v.is_enabled)
+        .map(v => {
+          const sizeOption = product.options?.find(o => o.name.toLowerCase() === "size");
+          const colorOption = product.options?.find(o => o.name.toLowerCase() === "color");
 
-      const finalType = mapping.type || detectedType;
+          const size = sizeOption ? sizeOption.values[v.options[0]] : "unknown";
+          const color = colorOption ? colorOption.values[v.options[1]] : "unknown";
+
+          return {
+            id: v.id,
+            price: v.price / 100,
+            size: size?.toLowerCase(),
+            color: color?.toLowerCase()
+          };
+        });
 
       return {
         id: product.id,
-
-        // ==========================
-        // 🧾 BASIC INFO
-        // ==========================
-        title: product.title || "Untitled Product",
-        name: product.title || "Untitled Product",
+        title: product.title,
+        name: product.title,
         category: "all",
-
-        // ==========================
-        // 💰 PRICE
-        // ==========================
-        price: variant?.price ? variant.price / 100 : 0,
-
-        // ==========================
-        // 🖼 IMAGE
-        // ==========================
         image: product.images?.[0]?.src || "/images/placeholder.png",
+        type,
 
-        // ==========================
-        // 🧠 PRODUCT TYPE (CRITICAL)
-        // ==========================
-        type: finalType,
+        // 🔥 THIS IS THE IMPORTANT PART
+        variants,
 
-        // ==========================
-        // 🖨 PRINTIFY DATA
-        // ==========================
-        printify: variant
+        // used later for routing
+        printify: {
+          productId: product.id
+        },
+
+        // 🇿🇦 PRODIGI (SAME FOR ALL T-SHIRTS)
+        prodigi: type === "tshirt"
           ? {
-              productId: product.id,
-              variantId: variant.id
+              sku: "GLOBAL-TEE-GIL-64000",
+              printArea: "front"
             }
-          : null,
-
-        // ==========================
-        // 🇿🇦 PRODIGI DATA
-        // ==========================
-        prodigi:
-          mapping.prodigiSku && mapping.designUrl
-            ? {
-                sku: mapping.prodigiSku,
-                designUrl: mapping.designUrl,
-                printArea: mapping.printArea || "front"
-              }
-            : null,
-
-        // ==========================
-        // 🧾 RAW (OPTIONAL DEBUG)
-        // ==========================
-        variants: validVariants,
-        images: product.images || []
+          : null
       };
     });
 
-    // ==========================
-    // ✅ RESPONSE
-    // ==========================
     return res.status(200).json({
       success: true,
       count: enhancedProducts.length,
