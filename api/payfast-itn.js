@@ -1,7 +1,6 @@
 import crypto from "crypto";
 import { supabase } from "../lib/supabase";
 
-// 🔁 RETRY HELPER
 async function retry(fn, retries = 3) {
   try {
     return await fn();
@@ -42,7 +41,6 @@ export default async function handler(req, res) {
       .digest("hex");
 
     if (generatedSignature !== receivedSignature) {
-      console.error("❌ Invalid signature");
       return res.status(400).send("Invalid signature");
     }
 
@@ -51,16 +49,13 @@ export default async function handler(req, res) {
     // ==========================
     const verifyRes = await fetch("https://www.payfast.co.za/eng/query/validate", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: queryString
     });
 
     const verifyText = await verifyRes.text();
 
     if (verifyText !== "VALID") {
-      console.error("❌ PayFast validation failed");
       return res.status(400).send("Validation failed");
     }
 
@@ -75,22 +70,19 @@ export default async function handler(req, res) {
     const paidAmount = parseFloat(data.amount_gross);
 
     // ==========================
-    // 🧠 FETCH ORDER (FIXED)
+    // 🧠 FETCH ORDER
     // ==========================
-    const { data: order, error } = await supabase
+    const { data: order } = await supabase
       .from("orders")
       .select("*")
-      .eq("order_id", orderId) // ✅ FIXED
+      .eq("order_id", orderId)
       .single();
 
-    if (!order || error) {
-      console.error("❌ Order not found:", orderId);
+    if (!order) {
       return res.status(400).send("Order not found");
     }
 
-    // 🚫 BLOCK DUPLICATES
     if (order.fulfilled) {
-      console.log("⚠️ Already fulfilled:", orderId);
       return res.status(200).send("Already fulfilled");
     }
 
@@ -105,11 +97,8 @@ export default async function handler(req, res) {
     );
 
     if (Math.abs(expectedAmount - paidAmount) > 1) {
-      console.error("❌ Amount mismatch", { expectedAmount, paidAmount });
       return res.status(400).send("Amount mismatch");
     }
-
-    console.log("✅ Payment verified:", orderId);
 
     // ==========================
     // 🧾 UPDATE PAYMENT STATUS
@@ -119,38 +108,42 @@ export default async function handler(req, res) {
       .update({
         payment_status: "paid",
         status: "paid",
-        payfast_payment_id: data.pf_payment_id,
-        payfast_status: data.payment_status
+        payfast_payment_id: data.pf_payment_id
       })
       .eq("order_id", orderId);
 
     // ==========================
-    // 🚚 SEND ORDER (WITH RETRY)
+    // 🚚 FULFILLMENT LOGIC
     // ==========================
-    if (supplier === "prodigi") {
 
-      await retry(() =>
-        fetch(`${req.headers.origin}/api/prodigi-orders`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            orderId,
-            items: cart,
-            customer
-          })
-        })
-      );
+    if (supplier === "printify") {
 
-    } else {
+      // 🔥 BUILD LINE ITEMS WITH VARIANTS
+      const line_items = cart.map(item => {
+        const variant = item.variants?.find(v =>
+          v.size === item.size.toLowerCase() &&
+          v.color === item.color.toLowerCase()
+        );
+
+        if (!variant) {
+          throw new Error(`Variant not found for ${item.name}`);
+        }
+
+        return {
+          product_id: item.printify.productId,
+          variant_id: variant.id,
+          quantity: item.quantity
+        };
+      });
 
       await retry(() =>
         fetch(`${req.headers.origin}/api/printify-orders`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            orderId,
-            items: cart,
-            shipping: {
+            external_id: orderId,
+            line_items,
+            address_to: {
               first_name: customer.firstName,
               last_name: customer.lastName,
               email: customer.email,
@@ -158,6 +151,36 @@ export default async function handler(req, res) {
               address1: customer.address1,
               city: customer.city,
               region: customer.region,
+              zip: customer.zip,
+              country: customer.country
+            }
+          })
+        })
+      );
+
+    } else if (supplier === "prodigi") {
+
+      const items = cart.map(item => ({
+        name: item.name,
+        size: item.size,
+        quantity: item.quantity,
+        designUrl: item.designUrl
+      }));
+
+      await retry(() =>
+        fetch(`${req.headers.origin}/api/prodigy-orders`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            external_id: orderId,
+            items,
+            shipping_address: {
+              first_name: customer.firstName,
+              last_name: customer.lastName,
+              email: customer.email,
+              phone: customer.phone,
+              address1: customer.address1,
+              city: customer.city,
               zip: customer.zip,
               country: customer.country
             }
@@ -185,4 +208,4 @@ export default async function handler(req, res) {
     console.error("🔥 ITN ERROR:", err);
     return res.status(500).send("Error");
   }
-      }
+}
