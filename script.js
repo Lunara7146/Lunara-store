@@ -61,7 +61,7 @@ function displayProducts(products) {
 
     card.innerHTML = `
       <div class="product-image-wrap">
-        <img src="${product.image}" class="product-image" alt="${product.name}">
+        <img src="/images/${product.id}.png" class="product-image" alt="${product.name}">
       </div>
 
       <div class="product-info">
@@ -84,6 +84,11 @@ function displayProducts(products) {
           <option>M</option>
           <option>L</option>
           <option>XL</option>
+        </select>
+
+        <select id="color-${index}">
+          <option value="black">Black</option>
+          <option value="white">White</option>
         </select>
 
         <button onclick="addToCart(${index}, event)">
@@ -116,7 +121,9 @@ function toggleFavorite(id, el) {
 // ==========================
 function addToCart(index, event) {
   const product = storeProducts[index];
+
   const size = document.getElementById(`size-${index}`)?.value || "M";
+  const color = document.getElementById(`color-${index}`)?.value || "black";
 
   if (!product.printify && !product.prodigi) {
     alert("This product is currently unavailable.");
@@ -124,7 +131,10 @@ function addToCart(index, event) {
   }
 
   const existing = cart.find(
-    item => item.id === product.id && item.size === size
+    item =>
+      item.id === product.id &&
+      item.size === size &&
+      item.color === color
   );
 
   if (existing) {
@@ -135,12 +145,17 @@ function addToCart(index, event) {
       name: product.name,
       price: product.price,
       size,
+      color,
       quantity: 1,
 
-      // 🔥 CRITICAL DATA
+      // 🔥 CRITICAL DATA FOR BACKEND
       type: product.type,
+      variants: product.variants,
       printify: product.printify,
-      prodigi: product.prodigi
+      prodigi: product.prodigi,
+
+      // 🔥 REQUIRED FOR PRODIGI
+      designUrl: `/images/${product.id}.png`
     });
   }
 
@@ -182,6 +197,7 @@ function updateCart() {
       <div>
         <h5>${item.name}</h5>
         <p>Size: ${item.size}</p>
+        <p>Color: ${item.color}</p>
         <p>Qty: ${item.quantity}</p>
       </div>
 
@@ -222,7 +238,7 @@ function closeCart() {
 }
 
 // ==========================
-// 💳 CHECKOUT (FIXED)
+// 💳 CHECKOUT (FINAL)
 // ==========================
 async function checkout() {
 
@@ -262,7 +278,7 @@ async function checkout() {
       lastName,
       email,
       amount: total,
-      cart, // 🔥 FULL CART SENT
+      cart,
       address1,
       city,
       region,
@@ -278,7 +294,7 @@ async function checkout() {
 }
 
 // ==========================
-// 📦 LOAD PRODUCTS (FIXED)
+// 📦 LOAD PRODUCTS
 // ==========================
 async function loadProducts() {
   if (productsContainer) {
@@ -292,7 +308,7 @@ async function loadProducts() {
 
     const data = await res.json();
 
-    storeProducts = data.data; // 🔥 USE BACKEND DIRECTLY
+    storeProducts = data.data;
 
     displayProducts(storeProducts);
     updateCart();
