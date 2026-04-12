@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const token = process.env.PRINTIFY_API_TOKEN; // ✅ FIXED
+    const token = process.env.PRINTIFY_API_TOKEN;
     const shopId = process.env.PRINTIFY_SHOP_ID;
 
     if (!token || !shopId) {
@@ -28,7 +28,8 @@ export default async function handler(req, res) {
       line_items,
       address_to,
       shipping_method = 1,
-      send_shipping_notification = false
+      send_shipping_notification = false,
+      metadata = {} // ✅ added
     } = req.body || {};
 
     if (!external_id || !Array.isArray(line_items) || !line_items.length || !address_to) {
@@ -38,8 +39,10 @@ export default async function handler(req, res) {
       });
     }
 
+    // ✅ STRICT VALIDATION
     const safeLineItems = line_items.map(item => {
       if (!item.product_id || !item.variant_id) {
+        console.error("❌ BAD LINE ITEM:", item);
         throw new Error("Invalid line item");
       }
 
@@ -53,6 +56,7 @@ export default async function handler(req, res) {
     const payload = {
       external_id: clean(external_id),
       line_items: safeLineItems,
+
       address_to: {
         first_name: clean(address_to.first_name),
         last_name: clean(address_to.last_name),
@@ -64,11 +68,14 @@ export default async function handler(req, res) {
         city: clean(address_to.city),
         zip: clean(address_to.zip)
       },
+
       shipping_method: Number(shipping_method),
-      send_shipping_notification: Boolean(send_shipping_notification)
+      send_shipping_notification: Boolean(send_shipping_notification),
+
+      metadata // ✅ useful for debugging orders later
     };
 
-    console.log("📦 ORDER PAYLOAD:", payload);
+    console.log("📦 PRINTIFY ORDER:", JSON.stringify(payload, null, 2));
 
     const response = await fetch(
       `https://api.printify.com/v1/shops/${shopId}/orders.json`,
@@ -93,6 +100,8 @@ export default async function handler(req, res) {
         details: data
       });
     }
+
+    console.log("✅ PRINTIFY SUCCESS:", data.id);
 
     return res.status(200).json({
       success: true,
