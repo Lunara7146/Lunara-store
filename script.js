@@ -35,6 +35,28 @@ function formatCurrency(amount) {
   return "R" + Number(amount || 0).toFixed(2);
 }
 
+// 🔥 SLUG GENERATOR (CRITICAL)
+function getSlug(name) {
+  return name
+    .toLowerCase()
+    .replace(/t-shirt/g, "tee")
+    .replace(/\s+/g, "-");
+}
+
+// 🔥 IMAGE PATH BUILDER
+function getImagePath(product, color) {
+  const slug = product.slug || getSlug(product.name);
+
+  const typeFolder =
+    product.type === "tshirt"
+      ? "shirts"
+      : product.type === "hoodie"
+      ? "hoodies"
+      : "pants";
+
+  return `/images/${typeFolder}/${slug}/${color}.png`;
+}
+
 // ==========================
 // 🛍️ DISPLAY PRODUCTS
 // ==========================
@@ -51,17 +73,19 @@ function displayProducts(products) {
   }
 
   products.forEach((product, index) => {
-
     const stock = Math.floor(Math.random() * 6) + 3;
     const reviews = Math.floor(Math.random() * 1500) + 300;
     const isFav = favorites.includes(product.id);
+
+    const defaultColor = "black";
+    const image = getImagePath(product, defaultColor);
 
     const card = document.createElement("div");
     card.className = "product-card";
 
     card.innerHTML = `
       <div class="product-image-wrap">
-        <img src="/images/${product.id}.png" class="product-image" alt="${product.name}">
+        <img id="img-${index}" src="${image}" class="product-image" alt="${product.name}">
       </div>
 
       <div class="product-info">
@@ -73,20 +97,20 @@ function displayProducts(products) {
           </button>
         </div>
 
-        <p class="product-price">${formatCurrency(product.price)}</p>
+        <p class="product-price">${formatCurrency(product.price || product.variants?.[0]?.price)}</p>
 
         <p class="product-tag">🔥 Almost sold out</p>
         <p class="product-stock">Only ${stock} left</p>
         <p class="product-reviews">★★★★★ (${reviews})</p>
 
         <select id="size-${index}">
-          <option>S</option>
-          <option>M</option>
-          <option>L</option>
-          <option>XL</option>
+          <option value="s">S</option>
+          <option value="m">M</option>
+          <option value="l">L</option>
+          <option value="xl">XL</option>
         </select>
 
-        <select id="color-${index}">
+        <select id="color-${index}" onchange="changeColor(${index})">
           <option value="black">Black</option>
           <option value="white">White</option>
         </select>
@@ -100,6 +124,17 @@ function displayProducts(products) {
 
     productsContainer.appendChild(card);
   });
+}
+
+// ==========================
+// 🎨 COLOR SWITCHING
+// ==========================
+function changeColor(index) {
+  const product = storeProducts[index];
+  const color = document.getElementById(`color-${index}`).value;
+
+  const img = document.getElementById(`img-${index}`);
+  img.src = getImagePath(product, color);
 }
 
 // ==========================
@@ -117,13 +152,15 @@ function toggleFavorite(id, el) {
 }
 
 // ==========================
-// 🛒 ADD TO CART (FIXED)
+// 🛒 ADD TO CART (FINAL)
 // ==========================
 function addToCart(index, event) {
   const product = storeProducts[index];
 
-  const size = document.getElementById(`size-${index}`)?.value || "M";
+  const size = document.getElementById(`size-${index}`)?.value || "m";
   const color = document.getElementById(`color-${index}`)?.value || "black";
+
+  const image = getImagePath(product, color);
 
   if (!product.printify && !product.prodigi) {
     alert("This product is currently unavailable.");
@@ -143,19 +180,18 @@ function addToCart(index, event) {
     cart.push({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: product.price || product.variants?.[0]?.price,
       size,
       color,
       quantity: 1,
 
-      // 🔥 CRITICAL DATA FOR BACKEND
       type: product.type,
       variants: product.variants,
       printify: product.printify,
       prodigi: product.prodigi,
 
-      // 🔥 REQUIRED FOR PRODIGI
-      designUrl: `/images/${product.id}.png`
+      // 🔥 IMPORTANT
+      designUrl: image
     });
   }
 
@@ -238,10 +274,9 @@ function closeCart() {
 }
 
 // ==========================
-// 💳 CHECKOUT (FINAL)
+// 💳 CHECKOUT
 // ==========================
 async function checkout() {
-
   if (!cart.length) {
     alert("Your cart is empty.");
     return;
