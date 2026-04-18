@@ -35,7 +35,6 @@ function formatCurrency(amount) {
   return "R" + Number(amount || 0).toFixed(2);
 }
 
-// 🔥 SLUG GENERATOR
 function getSlug(name) {
   return name
     .toLowerCase()
@@ -43,7 +42,6 @@ function getSlug(name) {
     .replace(/\s+/g, "-");
 }
 
-// 🔥 IMAGE PATH BUILDER
 function getImagePath(product, color) {
   const slug = product.slug || getSlug(product.name);
 
@@ -79,11 +77,7 @@ function displayProducts(products) {
 
     const defaultColor = "black";
     const image = getImagePath(product, defaultColor);
-
-    const price =
-      product.price ||
-      product.variants?.[0]?.price ||
-      199;
+    const price = product.price || product.variants?.[0]?.price || 199;
 
     const card = document.createElement("div");
     card.className = "product-card";
@@ -94,7 +88,6 @@ function displayProducts(products) {
       </div>
 
       <div class="product-info">
-
         <div class="product-top">
           <h4>${product.name}</h4>
           <button class="fav-btn ${isFav ? "active" : ""}" onclick="toggleFavorite('${product.id}', this)">
@@ -103,12 +96,10 @@ function displayProducts(products) {
         </div>
 
         <p class="product-price">${formatCurrency(price)}</p>
-
         <p class="product-tag">🔥 Almost sold out</p>
         <p class="product-stock">Only ${stock} left</p>
         <p class="product-reviews">★★★★★ (${reviews})</p>
 
-        <!-- ✅ FIXED SIZE VALUES -->
         <select id="size-${index}">
           <option value="S">S</option>
           <option value="M">M</option>
@@ -124,7 +115,6 @@ function displayProducts(products) {
         <button onclick="addToCart(${index}, event)">
           Add to Cart →
         </button>
-
       </div>
     `;
 
@@ -138,9 +128,11 @@ function displayProducts(products) {
 function changeColor(index) {
   const product = storeProducts[index];
   const color = document.getElementById(`color-${index}`).value;
-
   const img = document.getElementById(`img-${index}`);
-  img.src = getImagePath(product, color);
+
+  if (img) {
+    img.src = getImagePath(product, color);
+  }
 }
 
 // ==========================
@@ -148,7 +140,7 @@ function changeColor(index) {
 // ==========================
 function toggleFavorite(id, el) {
   if (favorites.includes(id)) {
-    favorites = favorites.filter(f => f !== id);
+    favorites = favorites.filter((f) => f !== id);
     el.classList.remove("active");
   } else {
     favorites.push(id);
@@ -158,14 +150,12 @@ function toggleFavorite(id, el) {
 }
 
 // ==========================
-// 🛒 ADD TO CART (FINAL FIXED)
+// 🛒 ADD TO CART
 // ==========================
 function addToCart(index, event) {
   const product = storeProducts[index];
-
   const size = document.getElementById(`size-${index}`)?.value || "M";
   const color = document.getElementById(`color-${index}`)?.value || "black";
-
   const image = getImagePath(product, color);
 
   if (!product.printify && !product.prodigi) {
@@ -174,7 +164,7 @@ function addToCart(index, event) {
   }
 
   const existing = cart.find(
-    item =>
+    (item) =>
       item.id === product.id &&
       item.size === size &&
       item.color === color
@@ -187,18 +177,16 @@ function addToCart(index, event) {
       id: product.id,
       name: product.name,
       price: product.price || product.variants?.[0]?.price || 199,
-
-      size,   // ✅ CRITICAL
-      color,  // ✅ CRITICAL
-
+      size,
+      color,
       quantity: 1,
 
       type: product.type,
+      slug: product.slug,
 
       printify: product.printify,
       prodigi: product.prodigi,
 
-      // 🔥 THIS FEEDS PRODIGI
       designUrl: image
     });
   }
@@ -229,7 +217,8 @@ function updateCart() {
 
   if (!cart.length) {
     items.innerHTML = `<p>Your cart is empty.</p>`;
-    document.getElementById("cart-total").innerText = "R0.00";
+    const totalEl = document.getElementById("cart-total");
+    if (totalEl) totalEl.innerText = "R0.00";
     return;
   }
 
@@ -256,7 +245,8 @@ function updateCart() {
   });
 
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  document.getElementById("cart-total").innerText = formatCurrency(total);
+  const totalEl = document.getElementById("cart-total");
+  if (totalEl) totalEl.innerText = formatCurrency(total);
 
   const count = document.getElementById("cart-count");
   if (count) {
@@ -265,12 +255,19 @@ function updateCart() {
   }
 }
 
+function removeFromCart(index) {
+  cart.splice(index, 1);
+  saveCart();
+  updateCart();
+}
+
 // ==========================
 // 🛒 CART UI
 // ==========================
 function openCart() {
   document.getElementById("cart-panel")?.classList.add("open");
 }
+
 function closeCart() {
   document.getElementById("cart-panel")?.classList.remove("open");
 }
@@ -284,21 +281,21 @@ async function checkout() {
     return;
   }
 
-  const firstName = document.getElementById("customer-first-name").value;
-  const lastName = document.getElementById("customer-last-name").value;
-  const email = document.getElementById("customer-email").value;
+  const firstName = document.getElementById("customer-first-name")?.value;
+  const lastName = document.getElementById("customer-last-name")?.value;
+  const email = document.getElementById("customer-email")?.value;
 
   if (!firstName || !lastName || !email) {
     alert("Please fill in your details.");
     return;
   }
 
-  const phone = document.getElementById("customer-phone").value;
-  const address1 = document.getElementById("customer-address1").value;
-  const city = document.getElementById("customer-city").value;
-  const region = document.getElementById("customer-region").value;
-  const zip = document.getElementById("customer-zip").value;
-  const country = document.getElementById("customer-country").value;
+  const phone = document.getElementById("customer-phone")?.value;
+  const address1 = document.getElementById("customer-address1")?.value;
+  const city = document.getElementById("customer-city")?.value;
+  const region = document.getElementById("customer-region")?.value;
+  const zip = document.getElementById("customer-zip")?.value;
+  const country = document.getElementById("customer-country")?.value;
 
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
@@ -327,6 +324,13 @@ async function checkout() {
   });
 
   const data = await res.json();
+
+  if (!res.ok || !data.url) {
+    console.error("Checkout failed:", data);
+    alert("Checkout failed. Please try again.");
+    return;
+  }
+
   window.location.href = data.url;
 }
 
@@ -340,14 +344,15 @@ async function loadProducts() {
 
   try {
     const res = await fetch("/api/products");
-
     const data = await res.json();
 
-    storeProducts = data.data;
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "API failed");
+    }
 
+    storeProducts = data.data || [];
     displayProducts(storeProducts);
     updateCart();
-
   } catch (err) {
     console.error("Fallback triggered", err);
     storeProducts = [];
