@@ -15,10 +15,10 @@ function encodeValue(value = "") {
 
 function buildSignatureString(data, passphrase = "") {
   const keys = Object.keys(data)
-    .filter(k => k !== "signature" && data[k] !== "" && data[k] !== undefined)
+    .filter((k) => k !== "signature" && data[k] !== "" && data[k] !== undefined)
     .sort();
 
-  let str = keys.map(k => `${k}=${encodeValue(data[k])}`).join("&");
+  let str = keys.map((k) => `${k}=${encodeValue(data[k])}`).join("&");
 
   if (passphrase) {
     str += `&passphrase=${encodeValue(passphrase)}`;
@@ -38,7 +38,6 @@ function generateSignature(data, passphrase = "") {
 // 🚀 MAIN
 // ==========================
 export default async function handler(req, res) {
-
   if (req.method !== "POST") {
     return res.status(405).send("Method not allowed");
   }
@@ -65,16 +64,14 @@ export default async function handler(req, res) {
     }
     processedOrders.add(orderId);
 
-    // ==========================
-    // 🧠 LOAD ORDER
-    // ==========================
-    const { data: orderData } = await supabase
+    const { data: orderData, error: orderError } = await supabase
       .from("orders")
       .select("*")
       .eq("order_id", orderId)
       .single();
 
-    if (!orderData) {
+    if (orderError || !orderData) {
+      console.error("❌ Order not found:", orderError);
       return res.status(404).send("Order not found");
     }
 
@@ -88,29 +85,29 @@ export default async function handler(req, res) {
 
     const isSA = country === "ZA";
 
-    // ==========================
-    // 🧠 SPLIT CART (UPDATED)
-    // ==========================
-    const prodigiItems = cart.filter(item =>
-      isSA &&
-      (item.type === "hoodie" || item.type === "tshirt") &&
-      item.prodigi?.prodigiSkuMap
-    );
-
-    const printifyItems = cart.filter(item =>
-      !(isSA &&
+    const prodigiItems = cart.filter(
+      (item) =>
+        isSA &&
         (item.type === "hoodie" || item.type === "tshirt") &&
-        item.prodigi?.prodigiSkuMap)
+        item.prodigi?.prodigiSkuMap
     );
 
-    let results = [];
+    const printifyItems = cart.filter(
+      (item) =>
+        !(
+          isSA &&
+          (item.type === "hoodie" || item.type === "tshirt") &&
+          item.prodigi?.prodigiSkuMap
+        )
+    );
+
+    const results = [];
 
     // ==========================
-    // 🇿🇦 PRODIGI (FIXED)
+    // 🇿🇦 PRODIGI
     // ==========================
     if (prodigiItems.length) {
       try {
-
         const prodigiOrder = {
           email: orderData.email,
           shipping: {
@@ -121,25 +118,36 @@ export default async function handler(req, res) {
             zip: customer.zip,
             country: customer.country
           },
-          items: prodigiItems.map(item => {
+          items: prodigiItems.map((item) => {
+            const size = String(item.size || "M").toUpperCase();
+            const color = String(item.color || "black").toLowerCase();
 
-            const size = item.size;
-            const color = item.color;
+            const normalizedSize =
+              size === "2XL" ? "XXL" :
+              size === "3XL" ? "XXXL" :
+              size;
 
             const sku =
-              item.prodigi?.prodigiSkuMap?.[color]?.[size];
+              item.prodigi?.prodigiSkuMap?.[color]?.[normalizedSize];
 
             const designUrl =
-              item.prodigi?.designUrlMap?.[color] ||
-              item.designUrl;
+              item.prodigi?.designUrlMap?.[color] || item.designUrl || null;
 
             if (!sku) {
-              throw new Error(`Missing SKU for ${color} ${size}`);
+              throw new Error(
+                `Missing Prodigi SKU for ${item.name} (${color} / ${normalizedSize})`
+              );
+            }
+
+            if (!designUrl) {
+              throw new Error(
+                `Missing design URL for ${item.name} (${color})`
+              );
             }
 
             return {
               name: item.name,
-              quantity: item.quantity,
+              quantity: Number(item.quantity || 1),
               prodigiSku: sku,
               designUrl,
               printArea: item.prodigi?.printArea || "front"
@@ -149,7 +157,6 @@ export default async function handler(req, res) {
 
         const result = await sendToProdigi(prodigiOrder);
         results.push({ provider: "PRODIGI", result });
-
       } catch (err) {
         console.error("❌ Prodigi failed → fallback to Printify", err);
         printifyItems.push(...prodigiItems);
@@ -161,9 +168,8 @@ export default async function handler(req, res) {
     // ==========================
     if (printifyItems.length) {
       try {
-
-        const safeItems = printifyItems.filter(item =>
-          item.printify?.productId && item.printify?.variantId
+        const safeItems = printifyItems.filter(
+          (item) => item.printify?.productId && item.printify?.variantId
         );
 
         if (safeItems.length) {
@@ -174,15 +180,11 @@ export default async function handler(req, res) {
 
           results.push({ provider: "PRINTIFY", result });
         }
-
       } catch (err) {
         console.error("❌ Printify failed:", err);
       }
     }
 
-    // ==========================
-    // 🧠 UPDATE ORDER
-    // ==========================
     const providerUsed =
       results.length > 1
         ? "SPLIT"
@@ -192,14 +194,13 @@ export default async function handler(req, res) {
       .from("orders")
       .update({
         status: "paid",
+        payment_status: "complete",
         provider: providerUsed,
+        split: results.length > 1,
         fulfillment_response: results
       })
       .eq("order_id", orderId);
 
-    // ==========================
-    // ✉️ EMAIL
-    // ==========================
     try {
       await resend.emails.send({
         from: "Lunara <onboarding@resend.dev>",
@@ -216,9 +217,59 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).send("Order processed");
-
   } catch (err) {
     console.error("🔥 ERROR:", err);
     return res.status(500).send("Server error");
   }
+}
+
+// ==========================
+// 🖨️ PRINTIFY
+// ==========================
+async function sendToPrintify(orderData) {
+  const cart = orderData.cart || [];
+  const customer = orderData.customer || {};
+
+  const line_items = cart.map((item) => ({
+    product_id: item.printify.productId,
+    variant_id: Number(item.printify.variantId),
+    quantity: Number(item.quantity || 1)
+  }));
+
+  const response = await fetch(
+    `https://api.printify.com/v1/shops/${process.env.PRINTIFY_SHOP_ID}/orders.json`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.PRINTIFY_API_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        external_id: orderData.order_id,
+        line_items,
+        address_to: {
+          first_name: customer.firstName,
+          last_name: customer.lastName,
+          email: orderData.email,
+          phone: customer.phone,
+          country: customer.country,
+          region: customer.region,
+          address1: customer.address1,
+          city: customer.city,
+          zip: customer.zip
+        },
+        shipping_method: 1,
+        send_shipping_notification: true
+      })
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error("❌ Printify error:", data);
+    throw new Error("Printify failed");
   }
+
+  return data;
+                                  }
