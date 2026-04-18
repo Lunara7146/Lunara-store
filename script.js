@@ -35,7 +35,7 @@ function formatCurrency(amount) {
   return "R" + Number(amount || 0).toFixed(2);
 }
 
-// 🔥 SLUG GENERATOR (CRITICAL)
+// 🔥 SLUG GENERATOR
 function getSlug(name) {
   return name
     .toLowerCase()
@@ -80,6 +80,11 @@ function displayProducts(products) {
     const defaultColor = "black";
     const image = getImagePath(product, defaultColor);
 
+    const price =
+      product.price ||
+      product.variants?.[0]?.price ||
+      199;
+
     const card = document.createElement("div");
     card.className = "product-card";
 
@@ -97,17 +102,18 @@ function displayProducts(products) {
           </button>
         </div>
 
-        <p class="product-price">${formatCurrency(product.price || product.variants?.[0]?.price)}</p>
+        <p class="product-price">${formatCurrency(price)}</p>
 
         <p class="product-tag">🔥 Almost sold out</p>
         <p class="product-stock">Only ${stock} left</p>
         <p class="product-reviews">★★★★★ (${reviews})</p>
 
+        <!-- ✅ FIXED SIZE VALUES -->
         <select id="size-${index}">
-          <option value="s">S</option>
-          <option value="m">M</option>
-          <option value="l">L</option>
-          <option value="xl">XL</option>
+          <option value="S">S</option>
+          <option value="M">M</option>
+          <option value="L">L</option>
+          <option value="XL">XL</option>
         </select>
 
         <select id="color-${index}" onchange="changeColor(${index})">
@@ -152,12 +158,12 @@ function toggleFavorite(id, el) {
 }
 
 // ==========================
-// 🛒 ADD TO CART (FINAL)
+// 🛒 ADD TO CART (FINAL FIXED)
 // ==========================
 function addToCart(index, event) {
   const product = storeProducts[index];
 
-  const size = document.getElementById(`size-${index}`)?.value || "m";
+  const size = document.getElementById(`size-${index}`)?.value || "M";
   const color = document.getElementById(`color-${index}`)?.value || "black";
 
   const image = getImagePath(product, color);
@@ -180,17 +186,19 @@ function addToCart(index, event) {
     cart.push({
       id: product.id,
       name: product.name,
-      price: product.price || product.variants?.[0]?.price,
-      size,
-      color,
+      price: product.price || product.variants?.[0]?.price || 199,
+
+      size,   // ✅ CRITICAL
+      color,  // ✅ CRITICAL
+
       quantity: 1,
 
       type: product.type,
-      variants: product.variants,
+
       printify: product.printify,
       prodigi: product.prodigi,
 
-      // 🔥 IMPORTANT
+      // 🔥 THIS FEEDS PRODIGI
       designUrl: image
     });
   }
@@ -255,12 +263,6 @@ function updateCart() {
     const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
     count.innerText = totalItems;
   }
-}
-
-function removeFromCart(index) {
-  cart.splice(index, 1);
-  saveCart();
-  updateCart();
 }
 
 // ==========================
@@ -338,8 +340,6 @@ async function loadProducts() {
 
   try {
     const res = await fetch("/api/products");
-
-    if (!res.ok) throw new Error("API failed");
 
     const data = await res.json();
 
