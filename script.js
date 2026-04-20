@@ -21,6 +21,116 @@ let favorites = JSON.parse(localStorage.getItem("lunaraFavorites")) || [];
 let storeProducts = [];
 
 // ==========================
+// 🏪 LOCAL FALLBACK PRODUCTS
+// These products will still show in your store
+// even if Printify does not return them
+// ==========================
+const localProducts = [
+  // HOODIES
+  {
+    id: "butterfly-hoodie",
+    name: "Butterfly Hoodie",
+    type: "hoodie",
+    slug: "butterfly-hoodie",
+    price: 599,
+    printify: true,
+    prodigi: true
+  },
+  {
+    id: "cosmic-eye-hoodie",
+    name: "Cosmic Eye Hoodie",
+    type: "hoodie",
+    slug: "cosmic-eye-hoodie",
+    price: 599,
+    printify: true,
+    prodigi: true
+  },
+  {
+    id: "drip-smile-hoodie",
+    name: "Drip Smile Hoodie",
+    type: "hoodie",
+    slug: "drip-smile-hoodie",
+    price: 599,
+    printify: true,
+    prodigi: true
+  },
+  {
+    id: "galaxy-hoodie",
+    name: "Galaxy Hoodie",
+    type: "hoodie",
+    slug: "galaxy-hoodie",
+    price: 599,
+    printify: true,
+    prodigi: true
+  },
+  {
+    id: "lotus-hoodie",
+    name: "Lotus Hoodie",
+    type: "hoodie",
+    slug: "lotus-hoodie",
+    price: 599,
+    printify: true,
+    prodigi: true
+  },
+  {
+    id: "lunar-hoodie",
+    name: "Lunar Hoodie",
+    type: "hoodie",
+    slug: "lunar-hoodie",
+    price: 599,
+    printify: true,
+    prodigi: true
+  },
+  {
+    id: "mushroom-hoodie",
+    name: "Mushroom Hoodie",
+    type: "hoodie",
+    slug: "mushroom-hoodie",
+    price: 599,
+    printify: true,
+    prodigi: true
+  },
+
+  // PANTS
+  {
+    id: "cosmic-butterfly-pants",
+    name: "Cosmic Butterfly Pants",
+    type: "pants",
+    slug: "cosmic-butterfly-pants",
+    price: 499,
+    printify: true,
+    prodigi: false
+  },
+  {
+    id: "moon-phase-hippie-pants",
+    name: "Moon Phase Hippie Pants",
+    type: "pants",
+    slug: "moon-phase-hippie-pants",
+    price: 499,
+    printify: true,
+    prodigi: false
+  },
+  {
+    id: "psychedelic-mushroom",
+    name: "Psychedelic Mushroom Pants",
+    type: "pants",
+    slug: "psychedelic-mushroom",
+    price: 499,
+    printify: true,
+    prodigi: false
+  },
+  {
+    id: "trippy-festival-pants",
+    name: "Trippy Festival Pants",
+    type: "pants",
+    slug: "trippy-festival-pants",
+    price: 499,
+    printify: true,
+    prodigi: false
+  }
+];
+
+// ==========================
 // ⚙️ HELPERS
 // ==========================
 function saveCart() {
@@ -36,23 +146,62 @@ function formatCurrency(amount) {
 }
 
 function getSlug(name) {
-  return name
+  return String(name || "")
     .toLowerCase()
     .replace(/t-shirt/g, "tee")
-    .replace(/\s+/g, "-");
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
 }
 
-function getImagePath(product, color) {
-  const slug = product.slug || getSlug(product.name);
+function getTypeFolder(product) {
+  const type = String(product?.type || "").toLowerCase();
 
-  const typeFolder =
-    product.type === "tshirt"
-      ? "shirts"
-      : product.type === "hoodie"
-      ? "hoodies"
-      : "pants";
+  if (type === "tshirt" || type === "shirt" || type === "tee") {
+    return "shirts";
+  }
+
+  if (type === "hoodie") {
+    return "hoodies";
+  }
+
+  return "pants";
+}
+
+function getImagePath(product, color = "black") {
+  const slug = product.slug || getSlug(product.name);
+  const typeFolder = getTypeFolder(product);
 
   return `/images/${typeFolder}/${slug}/${color}.png`;
+}
+
+function normalizeApiProduct(product = {}) {
+  const rawType = String(product.type || product.category || "").toLowerCase();
+  const rawName = String(product.name || "").toLowerCase();
+
+  let normalizedType = "tshirt";
+
+  if (rawType.includes("hoodie") || rawName.includes("hoodie")) {
+    normalizedType = "hoodie";
+  } else if (rawType.includes("pant") || rawName.includes("pant")) {
+    normalizedType = "pants";
+  } else if (
+    rawType.includes("shirt") ||
+    rawType.includes("tee") ||
+    rawName.includes("shirt") ||
+    rawName.includes("tee")
+  ) {
+    normalizedType = "tshirt";
+  }
+
+  return {
+    ...product,
+    id: product.id || product.slug || getSlug(product.name || "product"),
+    slug: product.slug || getSlug(product.name || "product"),
+    type: normalizedType,
+    price: Number(product.price || product.variants?.[0]?.price || 199),
+    printify: product.printify ?? true,
+    prodigi: product.prodigi ?? false
+  };
 }
 
 // ==========================
@@ -77,14 +226,20 @@ function displayProducts(products) {
 
     const defaultColor = "black";
     const image = getImagePath(product, defaultColor);
-    const price = product.price || product.variants?.[0]?.price || 199;
+    const price = Number(product.price || product.variants?.[0]?.price || 199);
 
     const card = document.createElement("div");
     card.className = "product-card";
 
     card.innerHTML = `
       <div class="product-image-wrap">
-        <img id="img-${index}" src="${image}" class="product-image" alt="${product.name}">
+        <img
+          id="img-${index}"
+          src="${image}"
+          class="product-image"
+          alt="${product.name}"
+          onerror="this.onerror=null;this.src='${getImagePath(product, "white")}'"
+        >
       </div>
 
       <div class="product-info">
@@ -102,13 +257,13 @@ function displayProducts(products) {
 
         <select id="size-${index}">
           <option value="S">S</option>
-          <option value="M">M</option>
+          <option value="M" selected>M</option>
           <option value="L">L</option>
           <option value="XL">XL</option>
         </select>
 
         <select id="color-${index}" onchange="changeColor(${index})">
-          <option value="black">Black</option>
+          <option value="black" selected>Black</option>
           <option value="white">White</option>
         </select>
 
@@ -127,10 +282,10 @@ function displayProducts(products) {
 // ==========================
 function changeColor(index) {
   const product = storeProducts[index];
-  const color = document.getElementById(`color-${index}`).value;
+  const color = document.getElementById(`color-${index}`)?.value || "black";
   const img = document.getElementById(`img-${index}`);
 
-  if (img) {
+  if (img && product) {
     img.src = getImagePath(product, color);
   }
 }
@@ -146,6 +301,7 @@ function toggleFavorite(id, el) {
     favorites.push(id);
     el.classList.add("active");
   }
+
   saveFavorites();
 }
 
@@ -154,6 +310,8 @@ function toggleFavorite(id, el) {
 // ==========================
 function addToCart(index, event) {
   const product = storeProducts[index];
+  if (!product) return;
+
   const size = document.getElementById(`size-${index}`)?.value || "M";
   const color = document.getElementById(`color-${index}`)?.value || "black";
   const image = getImagePath(product, color);
@@ -176,17 +334,14 @@ function addToCart(index, event) {
     cart.push({
       id: product.id,
       name: product.name,
-      price: product.price || product.variants?.[0]?.price || 199,
+      price: Number(product.price || product.variants?.[0]?.price || 199),
       size,
       color,
       quantity: 1,
-
       type: product.type,
       slug: product.slug,
-
       printify: product.printify,
       prodigi: product.prodigi,
-
       designUrl: image
     });
   }
@@ -197,10 +352,13 @@ function addToCart(index, event) {
 
   if (event?.target) {
     const btn = event.target;
+    const originalText = btn.innerText;
+
     btn.innerText = "Added ✓";
     btn.style.background = "var(--success)";
+
     setTimeout(() => {
-      btn.innerText = "Add to Cart →";
+      btn.innerText = originalText || "Add to Cart →";
       btn.style.background = "";
     }, 1200);
   }
@@ -217,8 +375,13 @@ function updateCart() {
 
   if (!cart.length) {
     items.innerHTML = `<p>Your cart is empty.</p>`;
+
     const totalEl = document.getElementById("cart-total");
     if (totalEl) totalEl.innerText = "R0.00";
+
+    const count = document.getElementById("cart-count");
+    if (count) count.innerText = "0";
+
     return;
   }
 
@@ -350,12 +513,24 @@ async function loadProducts() {
       throw new Error(data.error || "API failed");
     }
 
-    storeProducts = data.data || [];
+    const apiProducts = Array.isArray(data.data)
+      ? data.data.map(normalizeApiProduct)
+      : [];
+
+    const apiIds = new Set(apiProducts.map((p) => p.id));
+
+    const mergedProducts = [
+      ...apiProducts,
+      ...localProducts.filter((p) => !apiIds.has(p.id))
+    ];
+
+    storeProducts = mergedProducts;
     displayProducts(storeProducts);
     updateCart();
   } catch (err) {
     console.error("Fallback triggered", err);
-    storeProducts = [];
+
+    storeProducts = [...localProducts];
     displayProducts(storeProducts);
     updateCart();
   }
