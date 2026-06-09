@@ -751,3 +751,18 @@ body.cart-open .overlay {
 .footer-dropdown:hover .footer-dropbtn {
   color: var(--accent);
 }
+
+/* Dropdown Animation */
+.dropdown-content,
+.footer-dropdown-content {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.35s ease;
+}
+
+.dropdown:hover .dropdown-content,
+.footer-dropdown:hover .footer-dropdown-content {
+  max-height: 500px; /* enough space for items */
+  opacity: 1;
+}
