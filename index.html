@@ -7,11 +7,84 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
+  <style>
+    html { scroll-behavior: smooth; }
+
+    .dropdown { position: relative; display: inline-block; }
+    .dropbtn { background:none; border:none; font-size:1rem; cursor:pointer; color:#fff; }
+    .dropdown-content {
+      display:none; position:absolute; background:#111; min-width:160px;
+      box-shadow:0 8px 16px rgba(0,0,0,0.2); z-index:1;
+    }
+    .dropdown-content a {
+      color:#eee; padding:10px; text-decoration:none; display:block;
+    }
+    .dropdown-content a:hover { background:#333; }
+    .dropdown:hover .dropdown-content { display:block; }
+
+    .product-heading {
+      text-align:center;
+      font-family:'Playfair Display', serif;
+      font-size:2rem;
+      margin:2rem 0;
+    }
+
+    .info-content {
+      max-height:0; overflow:hidden; opacity:0;
+      transition:max-height 0.4s ease, opacity 0.4s ease;
+      margin-top:8px; padding:0 10px;
+      background:#111; color:#eee; border-radius:6px; font-size:0.9rem;
+    }
+    .info-content.open { max-height:300px; opacity:1; padding:10px; }
+    .info-btn {
+      background:none; border:none; font-size:1rem; cursor:pointer;
+      color:#fff; text-align:left; padding:6px 0;
+    }
+    .info-btn:hover { color:#ff9cf9; }
+  </style>
 </head>
 
 <body>
 
-  <!-- Hero Section -->
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+
+      <!-- Left logo -->
+      <a href="#" class="logo-left" aria-label="Lunara home">
+        <img src="images/lunara-website-logo.png" class="logo" alt="Lunara logo"/>
+      </a>
+
+      <!-- Center brand -->
+      <a href="#" class="brand-center" aria-label="Lunara's Universe home">
+        <img src="images/lunara-website-logo.png" class="brand-bg-logo" alt="">
+        <span>Lunara's Universe</span>
+      </a>
+
+      <!-- Right side -->
+      <div class="header-right">
+        <nav class="main-nav">
+          <div class="dropdown">
+            <button class="dropbtn">All Products ⬇</button>
+            <div class="dropdown-content">
+              <a href="#tshirts">T‑Shirts</a>
+              <a href="#sweatshirts">Sweatshirts</a>
+              <a href="#hoodies">Hoodies</a>
+              <a href="#sweatpants">Sweatpants</a>
+              <a href="#nova">Nova Collection</a>
+            </div>
+          </div>
+          <a href="#favorites">❤️ Favorites</a>
+        </nav>
+        <button class="cart-btn" onclick="openCart()" aria-label="Open cart">
+          🛒 <span id="cart-count">0</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Hero -->
   <section class="hero-premium">
     <div class="hero-content">
       <p class="hero-eyebrow">NEW DROP</p>
@@ -20,12 +93,10 @@
         Designed for expression. Built for presence.
         Premium cosmic streetwear crafted for those who stand apart.
       </p>
-
       <div class="hero-buttons">
         <a href="#shop" class="btn-primary">Shop Collection</a>
         <a href="#premium-trust" class="btn-secondary">Why Lunara</a>
       </div>
-
       <p class="hero-proof">
         ✨ New arrivals added regularly – discover your next favorite piece
       </p>
@@ -48,7 +119,33 @@
     <p>Fresh designs inspired by the universe.</p>
   </section>
 
-  <!-- Info Tabs Section (above footer) -->
+  <!-- Product Sections -->
+  <section id="tshirts" class="product-section">
+    <h2 class="product-heading">T‑Shirts</h2>
+    <div class="products-grid"></div>
+  </section>
+
+  <section id="sweatshirts" class="product-section">
+    <h2 class="product-heading">Sweatshirts</h2>
+    <div class="products-grid"></div>
+  </section>
+
+  <section id="hoodies" class="product-section">
+    <h2 class="product-heading">Hoodies</h2>
+    <div class="products-grid"></div>
+  </section>
+
+  <section id="sweatpants" class="product-section">
+    <h2 class="product-heading">Sweatpants</h2>
+    <div class="products-grid"></div>
+  </section>
+
+  <section id="nova" class="product-section">
+    <h2 class="product-heading">Nova Collection</h2>
+    <div class="products-grid"></div>
+  </section>
+
+  <!-- Info Tabs -->
   <div class="info-tabs">
     <div class="info-item">
       <button class="info-btn">📦 Shipping Times</button>
@@ -56,21 +153,18 @@
         <p>Orders are processed within 2–3 business days. Delivery from France or the nearest provider typically takes <strong>14–21 business days</strong>. International shipping times vary depending on destination.</p>
       </div>
     </div>
-
     <div class="info-item">
       <button class="info-btn">📑 Terms & Conditions</button>
       <div class="info-content">
         <p>Full Terms & Conditions apply. Scroll through the complete policies including returns, credits, liability, and secure checkout.</p>
       </div>
     </div>
-
     <div class="info-item">
       <button class="info-btn">🔄 Return Policy</button>
       <div class="info-content">
         <p>Returns must be requested within <strong>7 days</strong> of receiving the item. Customers must include the provided QR code or link with photo evidence of the manufacturer defect. Returns are only accepted for manufacturer problems — not for personal preference.</p>
       </div>
     </div>
-
     <div class="info-item">
       <button class="info-btn">🌍 Customs Notice</button>
       <div class="info-content">
@@ -79,14 +173,13 @@
     </div>
   </div>
 
-  <!-- Footer Contact -->
+  <!-- Footer -->
   <footer class="premium-footer">
     <div class="footer-contact">
       <p>Email: <a href="mailto:lunarasuniverse@gmail.com">lunarasuniverse@gmail.com</a></p>
       <p>WhatsApp: <a href="https://wa.me/27XXXXXXXXX" target="_blank">+27 XX XXX XXXX</a></p>
       <p>Instagram: <a href="https://instagram.com/lunara_universe" target="_blank">@lunara_universe</a></p>
       <p>TikTok: <a href="https://tiktok.com/@lunara_universe" target="_blank">@lunara_universe</a></p>
-      <p><a href="#" id="openTermsLink">📑 View Full Terms & Conditions</a></p>
     </div>
   </footer>
 
@@ -95,15 +188,9 @@
     document.querySelectorAll('.info-btn').forEach(button => {
       button.addEventListener('click', () => {
         const content = button.nextElementSibling;
-
-        // Close other open popups
         document.querySelectorAll('.info-content').forEach(section => {
-          if (section !== content) {
-            section.classList.remove('open');
-          }
+          if (section !== content) section.classList.remove('open');
         });
-
-        // Toggle current popup
         content.classList.toggle('open');
       });
     });
