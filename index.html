@@ -130,34 +130,77 @@
 
   <footer class="premium-footer">
     <div class="footer-grid">
+
+      <!-- Brand -->
       <div>
         <img src="images/lunara-website-logo.png" class="footer-logo" alt="Lunara logo">
         <p>Cosmic streetwear for dreamers.</p>
       </div>
 
-      <div>
-        <h4>Shop</h4>
-        <a href="#shop">All Products</a>
-        <a href="#shop">Hoodies</a>
-        <a href="#shop">T-Shirts</a>
-        <a href="#shop">Pants</a>
-      </div>
-
+      <!-- Support -->
       <div>
         <h4>Support</h4>
         <p>Email: lunarasuniverse@gmail.com</p>
         <p>Response time: 24–48h</p>
       </div>
 
+      <!-- Connect -->
       <div>
-        <h4>Trust</h4>
-        <p>Secure checkout</p>
-        <p>Tracked shipping</p>
-        <p>Quality guarantee</p>
+        <h4>Connect</h4>
+        <p>Instagram: <a href="https://instagram.com/lunara_universe" target="_blank">@lunara_universe</a></p>
+        <p>TikTok: <a href="https://tiktok.com/@lunara_universe" target="_blank">@lunara_universe</a></p>
+      </div>
+
+      <!-- Info Popups -->
+      <div class="info-sections">
+        <div class="info-item">
+          <button class="info-btn">📦 Shipping Times</button>
+          <div class="info-content">
+            <p>Orders are processed within 2–3 business days. Delivery from France or the nearest provider typically takes <strong>14–21 business days</strong>. International shipping times vary depending on destination.</p>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <button class="info-btn">📑 Terms & Conditions</button>
+          <div class="info-content">
+            <p>Strict return policy: only manufacturer defects qualify for Lunara Credits. Customers must provide photo and packaging evidence. No refunds for preference-based returns.</p>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <button class="info-btn">🔄 Return Policy</button>
+          <div class="info-content">
+            <p>Returns must be requested within <strong>7 days</strong> of receiving the item. Customers must include the provided QR code or link with photo evidence of the manufacturer defect. Returns are only accepted for manufacturer problems — not for personal preference.</p>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <button class="info-btn">🌍 Customs Notice</button>
+          <div class="info-content">
+            <p><strong>Customs excluded:</strong> All international orders shipped to South Africa are subject to customs duties and import taxes. Customers are responsible for paying these fees upon delivery. Lunara’s Universe is not liable for delays caused by customs clearance.</p>
+          </div>
+        </div>
       </div>
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <!-- Smooth popup toggle script -->
+  <script>
+    document.querySelectorAll('.info-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const content = button.nextElementSibling;
+
+        // Close other open popups
+        document.querySelectorAll('.info-content').forEach(section => {
+          if (section !== content) {
+            section.classList.remove('open');
+          }
+        });
+
+        // Toggle current popup
+        content.classList.toggle('open');
+      });
+    });
+  </script>
 </body>
 </html>
