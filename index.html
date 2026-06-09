@@ -35,7 +35,7 @@
               <a href="#nova">Nova Collection</a>
             </div>
           </div>
-          <a href="#favorites">🦋 Favorites</a>
+          <a href="#favorites" aria-label="Favorites">❤️</a>
         </nav>
 
         <button class="cart-btn" onclick="openCart()" aria-label="Open cart">
@@ -83,27 +83,64 @@
   <!-- Product Sections -->
   <section id="tshirts" class="product-section">
     <h2 class="product-heading">T-Shirts</h2>
-    <div class="products-grid"></div>
+    <div class="products-grid">
+      <div class="product-card">
+        <h3>Galaxy Tee</h3>
+        <p>Limited Edition</p>
+        <button class="favorite-btn" data-name="Galaxy Tee" data-category="T-Shirts">❤️</button>
+      </div>
+    </div>
   </section>
 
   <section id="sweatshirts" class="product-section">
     <h2 class="product-heading">Sweatshirts</h2>
-    <div class="products-grid"></div>
+    <div class="products-grid">
+      <div class="product-card">
+        <h3>Cosmic Sweatshirt</h3>
+        <p>Premium Quality</p>
+        <button class="favorite-btn" data-name="Cosmic Sweatshirt" data-category="Sweatshirts">❤️</button>
+      </div>
+    </div>
   </section>
 
   <section id="sweatpants" class="product-section">
     <h2 class="product-heading">Sweatpants</h2>
-    <div class="products-grid"></div>
+    <div class="products-grid">
+      <div class="product-card">
+        <h3>Starlight Sweatpants</h3>
+        <p>Comfort Fit</p>
+        <button class="favorite-btn" data-name="Starlight Sweatpants" data-category="Sweatpants">❤️</button>
+      </div>
+    </div>
   </section>
 
   <section id="hoodies" class="product-section">
     <h2 class="product-heading">Hoodies</h2>
-    <div class="products-grid"></div>
+    <div class="products-grid">
+      <div class="product-card">
+        <h3>Nebula Hoodie</h3>
+        <p>Exclusive Drop</p>
+        <button class="favorite-btn" data-name="Nebula Hoodie" data-category="Hoodies">❤️</button>
+      </div>
+    </div>
   </section>
 
   <section id="nova" class="product-section">
     <h2 class="product-heading">Nova Collection</h2>
-    <div class="products-grid"></div>
+    <div class="products-grid">
+      <div class="product-card">
+        <h3>Nova Jacket</h3>
+        <p>Cosmic Design</p>
+        <button class="favorite-btn" data-name="Nova Jacket" data-category="Nova Collection">❤️</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Favorites Section -->
+  <section id="favorites">
+    <h2 class="product-heading">🦋 Your Favorites</h2>
+    <p>Saved products will appear here for quick access.</p>
+    <div class="favorite-items" id="favorite-items"></div>
   </section>
 
   <div id="overlay" class="overlay" onclick="closeCart()"></div>
