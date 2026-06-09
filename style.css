@@ -579,6 +579,51 @@ body.cart-open .overlay {
   color: var(--text);
 }
 
+/* Footer Dropdowns (click-to-open) */
+.footer-dropdown {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.footer-dropbtn {
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  transition: color 0.3s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.footer-dropdown-content {
+  display: none;
+  position: absolute;
+  bottom: 40px; /* opens upward */
+  background: var(--panel-2);
+  min-width: 260px;
+  box-shadow: 0px 6px 12px rgba(0,0,0,0.4);
+  border-radius: 10px;
+  padding: 12px;
+  z-index: 1000;
+}
+
+.footer-dropdown-content p {
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Active state when open */
+.footer-dropdown.open .footer-dropdown-content {
+  display: block;
+}
+
+.footer-dropdown.open .footer-dropbtn {
+  color: var(--accent);
+}
+
 /* =========================
    MOBILE
 ========================= */
