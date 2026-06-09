@@ -93,28 +93,101 @@
         <p>TikTok: <a href="https://tiktok.com/@lunara_universe" target="_blank">@lunara_universe</a></p>
       </div>
 
-      <div class="footer-dropdowns">
-        <div class="footer-dropdown">
-          <button class="footer-dropbtn">📦 Shipping</button>
-          <div class="footer-dropdown-content">
-            <p>Orders are processed within 2–3 business days. Delivery from France or the nearest provider typically takes <strong>14–21 business days</strong>.</p>
-          </div>
-        </div>
+      <!-- Info Tabs Row -->
+<div class="info-tabs">
+  <button class="info-btn" data-target="terms">Terms & Conditions</button>
+  <button class="info-btn" data-target="customs">Customs</button>
+  <button class="info-btn" data-target="shipping">Shipping</button>
+</div>
 
-        <div class="footer-dropdown">
-          <button class="footer-dropbtn">📑 Terms & Conditions</button>
-          <div class="footer-dropdown-content">
-            <p>Strict return policy: only manufacturer defects qualify for Lunara Credits. Customers must provide photo and packaging evidence. No refunds for preference-based returns.</p>
-          </div>
-        </div>
+<!-- Modals -->
+<div id="terms" class="info-modal">
+  <div class="info-content">
+    <section class="terms-info">
+      <h2>📑 Terms & Conditions</h2>
 
-        <div class="footer-dropdown">
-          <button class="footer-dropbtn">🌍 Customs</button>
-          <div class="footer-dropdown-content">
-            <p><strong>Customs excluded:</strong> All international orders shipped to South Africa are subject to customs duties and import taxes. Customers are responsible for paying these fees upon delivery.</p>
-          </div>
-        </div>
-      </div>
+      <h3>1. Returns & Exchanges</h3>
+      <p>Returns are only accepted if the product is defective due to manufacturer error 
+      (e.g., faulty stitching, incorrect sewing, or misprinted imagery). Customers must submit clear photos and physical evidence showing the defect as it arrived in the original packaging. Returns for reasons of personal preference (e.g., not liking the style, color, or fit) will not be accepted and will not qualify for credit.</p>
+
+      <h3>2. Store Credit</h3>
+      <p>Approved returns will be issued as Lunara Credits — store credit that can be used for discounts on future purchases. Cash refunds are not provided. Credits are only granted when manufacturer defects are verified. Credits cannot be claimed for items damaged after delivery by the customer.</p>
+
+      <h3>3. Return Process</h3>
+      <p>To initiate a return, customers must:</p>
+      <ul>
+        <li>Submit photos of the defect within 7 days of delivery.</li>
+        <li>Provide evidence that the defect was present upon arrival (e.g., packaging photos).</li>
+        <li>Ship the item back in its original condition and packaging.</li>
+      </ul>
+      <p>Returns that do not meet these requirements will be rejected.</p>
+
+      <h3>4. Shipping Times</h3>
+      <p>Orders are processed within 2–3 business days. Delivery from France or the nearest provider typically takes <strong>14–21 business days</strong>. International shipping times vary depending on destination and carrier availability.</p>
+
+      <h3>5. Customs & Duties</h3>
+      <p>All international orders shipped to South Africa are subject to customs duties and import taxes. Customers are responsible for paying these fees upon delivery. Lunara’s Universe is not liable for delays caused by customs clearance.</p>
+
+      <h3>6. Liability</h3>
+      <p>Lunara’s Universe is not responsible for damages caused by misuse, improper care, or unauthorized alterations of products. Our liability is limited to the value of the purchased item. Verified manufacturer defects will be replaced or credited.</p>
+
+      <h3>7. Secure Checkout</h3>
+      <p>All payments are processed securely. We do not store credit card details and use encrypted payment gateways to protect your information.</p>
+
+      <h3>8. Agreement</h3>
+      <p>By placing an order with Lunara’s Universe, you agree to these Terms & Conditions. These policies are subject to change, and updates will be posted on this page.</p>
+    </section>
+    <button class="close-btn">✕ Close</button>
+  </div>
+</div>
+
+<div id="customs" class="info-modal">
+  <div class="info-content">
+    <h2>🌍 Customs Notice</h2>
+    <p><strong>Customs excluded:</strong> All international orders shipped to South Africa are subject to customs duties and import taxes. Customers are responsible for paying these fees upon delivery. Lunara’s Universe is not liable for delays caused by customs clearance.</p>
+    <button class="close-btn">✕ Close</button>
+  </div>
+</div>
+
+<div id="shipping" class="info-modal">
+  <div class="info-content">
+    <h2>📦 Shipping Information</h2>
+    <p><strong>Production time:</strong> Orders are processed within 2–3 business days.</p>
+    <p><strong>Delivery time:</strong> Since items are shipped from France or the closest provider, delivery typically takes <strong>14–21 business days</strong>.</p>
+    <p>International shipping times may vary depending on destination and carrier availability.</p>
+    <button class="close-btn">✕ Close</button>
+  </div>
+</div>
+
+<!-- Script -->
+<script>
+  const buttons = document.querySelectorAll('.info-btn');
+  const modals = document.querySelectorAll('.info-modal');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-target');
+      const targetModal = document.getElementById(targetId);
+      modals.forEach(m => m.classList.remove('open'));
+      targetModal.classList.add('open');
+    });
+  });
+
+  modals.forEach(modal => {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal || e.target.classList.contains('close-btn')) {
+        modal.classList.remove('open');
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === "Escape") {
+      modals.forEach(m => m.classList.remove('open'));
+    }
+  });
+</script>
+
     </div>
   </footer>
 
