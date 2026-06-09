@@ -11,84 +11,136 @@
 
 <body>
 
-  <!-- Header -->
-  <header class="site-header">
+  <header class="site-header" id="site-header">
     <div class="header-inner">
 
-      <!-- Centered Brand -->
-      <div class="brand-wrapper">
-        <a href="#" class="brand-center" aria-label="Lunara's Universe home">
-          <img src="images/lunara-website-logo.png" class="brand-bg-logo" alt="">
-          <span class="brand-name">Lunara's Universe</span>
-        </a>
-      </div>
+      <a href="#" class="logo-left" aria-label="Lunara home">
+        <img src="images/lunara-website-logo.png" class="logo" alt="Lunara logo"/>
+      </a>
 
-      <!-- Navigation aligned right -->
-      <div class="nav-wrapper">
+      <a href="#" class="brand-center" aria-label="Lunara's Universe home">
+        <img src="images/lunara-website-logo.png" class="brand-bg-logo" alt="">
+        <span>Lunara's Universe</span>
+      </a>
+
+      <div class="header-right">
         <nav class="main-nav">
-          <div class="dropdown">
-            <button class="dropbtn">All Products ▼</button>
-            <div class="dropdown-content">
-              <a href="#nova">Nova Collection</a>
-              <a href="#tshirts">T-Shirts</a>
-              <a href="#sweatshirts">Sweatshirts</a>
-              <a href="#sweatpants">Sweatpants</a>
-              <a href="#hoodies">Hoodies</a>
-            </div>
-          </div>
-          <a href="#favorites" class="favorites">🦋 Favorites</a>
+          <a href="#shop">Shop</a>
+          <a href="#premium-trust">Why</a>
         </nav>
+
+        <button class="cart-btn" onclick="openCart()" aria-label="Open cart">
+          🛒 <span id="cart-count">0</span>
+        </button>
       </div>
 
     </div>
   </header>
 
-  <!-- Hero -->
   <section class="hero-premium">
     <div class="hero-content">
+      <p class="hero-eyebrow">NEW DROP</p>
       <h1>Streetwear for those who move differently</h1>
-      <p class="hero-sub">Designed for expression. Built for presence. Limited pieces. No restocks.</p>
+      <p class="hero-sub">
+        Designed for expression. Built for presence.
+        Premium cosmic streetwear crafted for those who stand apart.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="#shop" class="btn-primary">Shop Collection</a>
+        <a href="#premium-trust" class="btn-secondary">Why Lunara</a>
+      </div>
+
+      <p class="hero-proof">
+        ✨ New arrivals added regularly – discover your next favorite piece
+      </p>
     </div>
   </section>
 
-  <!-- Product Collections (visible on store) -->
-  <section id="nova" class="collection">
-    <h2>Nova Collection</h2>
-    <div class="products-grid"></div>
+  <section class="trust-bar">
+    <div class="trust-bar-inner">
+      <span>✨ Exclusive cosmic designs</span>
+      <span>🔒 Secure checkout</span>
+      <span>🚚 Tracked shipping</span>
+      <span>💫 Premium quality</span>
+    </div>
   </section>
 
-  <section id="tshirts" class="collection">
-    <h2>T-Shirts</h2>
-    <div class="products-grid"></div>
+  <section class="featured-banner">
+    <h2>Cosmic Streetwear Collection</h2>
+    <p>Fresh designs inspired by the universe.</p>
   </section>
 
-  <section id="sweatshirts" class="collection">
-    <h2>Sweatshirts</h2>
-    <div class="products-grid"></div>
+  <section id="shop" class="products"></section>
+
+  <section id="premium-trust" class="premium-trust">
+    <h2 class="trust-heading">Why customers choose Lunara</h2>
+
+    <div class="trust-grid">
+      <div class="trust-card">
+        <h3>🌙 Designed for self-expression</h3>
+        <p>Each piece is crafted to stand out. Made for individuals who move differently.</p>
+      </div>
+
+      <div class="trust-card">
+        <h3>🚚 Fast & tracked delivery</h3>
+        <p>Every order includes tracking so you always know where it is.</p>
+      </div>
+
+      <div class="trust-card">
+        <h3>🔒 Secure checkout</h3>
+        <p>Payments are protected and processed securely.</p>
+      </div>
+
+      <div class="trust-card">
+        <h3>💫 Quality guarantee</h3>
+        <p>If something isn’t right, we’ll make it right.</p>
+      </div>
+    </div>
   </section>
 
-  <section id="sweatpants" class="collection">
-    <h2>Sweatpants</h2>
-    <div class="products-grid"></div>
-  </section>
+  <div id="overlay" class="overlay" onclick="closeCart()"></div>
 
-  <section id="hoodies" class="collection">
-    <h2>Hoodies</h2>
-    <div class="products-grid"></div>
-  </section>
+  <aside id="cart-panel" class="cart-panel">
+    <div class="cart-header">
+      <h3>Your Cart</h3>
+      <button onclick="closeCart()" aria-label="Close cart">✕</button>
+    </div>
 
-  <!-- Favorites Section -->
-  <section id="favorites" class="collection">
-    <h2>Favorites 🦋</h2>
-    <div class="products-grid"></div>
-  </section>
+    <div id="cart-items"></div>
 
-  <!-- Footer with dropdowns -->
+    <div class="cart-footer">
+      <h4>Total: <span id="cart-total">R0.00</span></h4>
+
+      <input id="customer-first-name" placeholder="First name">
+      <input id="customer-last-name" placeholder="Last name">
+      <input id="customer-email" placeholder="Email (for order updates)">
+      <input id="customer-phone" placeholder="Phone (for delivery)">
+      <input id="customer-address1" placeholder="Street address">
+      <input id="customer-city" placeholder="City">
+      <input id="customer-region" placeholder="Province">
+      <input id="customer-zip" placeholder="Postal code">
+      <input id="customer-country" value="ZA">
+
+      <button class="checkout-btn" onclick="checkout()">
+        Secure Checkout →
+      </button>
+    </div>
+  </aside>
+
   <footer class="premium-footer">
     <div class="footer-grid">
       <div>
         <img src="images/lunara-website-logo.png" class="footer-logo" alt="Lunara logo">
         <p>Cosmic streetwear for dreamers.</p>
+      </div>
+
+      <div>
+        <h4>Shop</h4>
+        <a href="#shop">All Products</a>
+        <a href="#shop">Hoodies</a>
+        <a href="#shop">T-Shirts</a>
+        <a href="#shop">Pants</a>
       </div>
 
       <div>
@@ -98,32 +150,10 @@
       </div>
 
       <div>
-        <h4>Connect</h4>
-        <p>Instagram: <a href="https://instagram.com/lunara_universe" target="_blank">@lunara_universe</a></p>
-        <p>TikTok: <a href="https://tiktok.com/@lunara_universe" target="_blank">@lunara_universe</a></p>
-      </div>
-
-      <div class="footer-dropdowns">
-        <div class="footer-dropdown">
-          <button class="footer-dropbtn">📦 Shipping</button>
-          <div class="footer-dropdown-content">
-            <p>Orders are processed within 2–3 business days. Delivery from France or the nearest provider typically takes <strong>14–21 business days</strong>.</p>
-          </div>
-        </div>
-
-        <div class="footer-dropdown">
-          <button class="footer-dropbtn">📑 Terms & Conditions</button>
-          <div class="footer-dropdown-content">
-            <p>Strict return policy: only manufacturer defects qualify for Lunara Credits. Customers must provide photo and packaging evidence. No refunds for preference-based returns.</p>
-          </div>
-        </div>
-
-        <div class="footer-dropdown">
-          <button class="footer-dropbtn">🌍 Customs</button>
-          <div class="footer-dropdown-content">
-            <p><strong>Customs excluded:</strong> All international orders shipped to South Africa are subject to customs duties and import taxes. Customers are responsible for paying these fees upon delivery.</p>
-          </div>
-        </div>
+        <h4>Trust</h4>
+        <p>Secure checkout</p>
+        <p>Tracked shipping</p>
+        <p>Quality guarantee</p>
       </div>
     </div>
   </footer>
