@@ -25,8 +25,17 @@
 
       <div class="header-right">
         <nav class="main-nav">
-          <a href="#shop">Shop</a>
-          <a href="#premium-trust">Why</a>
+          <div class="dropdown">
+            <button class="dropbtn">All Products ▼</button>
+            <div class="dropdown-content">
+              <a href="#tshirts">T-Shirts</a>
+              <a href="#sweatshirts">Sweatshirts</a>
+              <a href="#sweatpants">Sweatpants</a>
+              <a href="#hoodies">Hoodies</a>
+              <a href="#nova">Nova Collection</a>
+            </div>
+          </div>
+          <a href="#favorites">🦋 Favorites</a>
         </nav>
 
         <button class="cart-btn" onclick="openCart()" aria-label="Open cart">
@@ -43,7 +52,7 @@
       <h1>Streetwear for those who move differently</h1>
       <p class="hero-sub">
         Designed for expression. Built for presence.
-        Limited pieces. No restocks.
+        Premium cosmic streetwear crafted for those who stand apart.
       </p>
 
       <div class="hero-buttons">
@@ -52,14 +61,14 @@
       </div>
 
       <p class="hero-proof">
-        🔥 Limited launch collection — once it's gone, it's gone
+        ✨ New arrivals added regularly – discover your next favorite piece
       </p>
     </div>
   </section>
 
   <section class="trust-bar">
     <div class="trust-bar-inner">
-      <span>✨ Limited launch collection</span>
+      <span>✨ Exclusive cosmic designs</span>
       <span>🔒 Secure checkout</span>
       <span>🚚 Tracked shipping</span>
       <span>💫 Premium quality</span>
@@ -67,36 +76,34 @@
   </section>
 
   <section class="featured-banner">
-    <h2>Limited Cosmic Drop</h2>
-    <p>Once it's gone, it's gone.</p>
+    <h2>Cosmic Streetwear Collection</h2>
+    <p>Fresh designs inspired by the universe.</p>
   </section>
 
-  <section id="shop" class="products"></section>
+  <!-- Product Sections -->
+  <section id="tshirts" class="product-section">
+    <h2 class="product-heading">T-Shirts</h2>
+    <div class="products-grid"></div>
+  </section>
 
-  <section id="premium-trust" class="premium-trust">
-    <h2 class="trust-heading">Why customers choose Lunara</h2>
+  <section id="sweatshirts" class="product-section">
+    <h2 class="product-heading">Sweatshirts</h2>
+    <div class="products-grid"></div>
+  </section>
 
-    <div class="trust-grid">
-      <div class="trust-card">
-        <h3>🌙 Designed for self-expression</h3>
-        <p>Each piece is crafted to stand out. Made for individuals who move differently.</p>
-      </div>
+  <section id="sweatpants" class="product-section">
+    <h2 class="product-heading">Sweatpants</h2>
+    <div class="products-grid"></div>
+  </section>
 
-      <div class="trust-card">
-        <h3>🚚 Fast & tracked delivery</h3>
-        <p>Every order includes tracking so you always know where it is.</p>
-      </div>
+  <section id="hoodies" class="product-section">
+    <h2 class="product-heading">Hoodies</h2>
+    <div class="products-grid"></div>
+  </section>
 
-      <div class="trust-card">
-        <h3>🔒 Secure checkout</h3>
-        <p>Payments are protected and processed securely.</p>
-      </div>
-
-      <div class="trust-card">
-        <h3>💫 Quality guarantee</h3>
-        <p>If something isn’t right, we’ll make it right.</p>
-      </div>
-    </div>
+  <section id="nova" class="product-section">
+    <h2 class="product-heading">Nova Collection</h2>
+    <div class="products-grid"></div>
   </section>
 
   <div id="overlay" class="overlay" onclick="closeCart()"></div>
@@ -137,10 +144,11 @@
 
       <div>
         <h4>Shop</h4>
-        <a href="#shop">All Products</a>
-        <a href="#shop">Hoodies</a>
-        <a href="#shop">T-Shirts</a>
-        <a href="#shop">Pants</a>
+        <a href="#tshirts">T-Shirts</a>
+        <a href="#sweatshirts">Sweatshirts</a>
+        <a href="#sweatpants">Sweatpants</a>
+        <a href="#hoodies">Hoodies</a>
+        <a href="#nova">Nova Collection</a>
       </div>
 
       <div>
@@ -150,10 +158,11 @@
       </div>
 
       <div>
-        <h4>Trust</h4>
-        <p>Secure checkout</p>
-        <p>Tracked shipping</p>
-        <p>Quality guarantee</p>
+        <h4>Why Lunara</h4>
+        <p>✨ Exclusive cosmic designs</p>
+        <p>🔒 Secure checkout</p>
+        <p>🚚 Tracked shipping</p>
+        <p>💫 Quality guarantee</p>
       </div>
     </div>
   </footer>
