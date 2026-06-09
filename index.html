@@ -13,28 +13,32 @@
 
   <!-- Header -->
   <header class="site-header">
-    <div class="header-inner header-grid">
+    <div class="header-inner">
 
-      <!-- Centered Brand with glowing logo -->
-      <a href="#" class="brand-center" aria-label="Lunara's Universe home">
-        <img src="images/lunara-website-logo.png" class="brand-bg-logo" alt="">
-        <span class="brand-name">Lunara's Universe</span>
-      </a>
+      <!-- Centered Brand -->
+      <div class="brand-wrapper">
+        <a href="#" class="brand-center" aria-label="Lunara's Universe home">
+          <img src="images/lunara-website-logo.png" class="brand-bg-logo" alt="">
+          <span class="brand-name">Lunara's Universe</span>
+        </a>
+      </div>
 
-      <!-- Navigation -->
-      <nav class="main-nav">
-        <div class="dropdown">
-          <button class="dropbtn">All Products ▼</button>
-          <div class="dropdown-content">
-            <a href="#nova">Nova Collection</a>
-            <a href="#tshirts">T-Shirts</a>
-            <a href="#sweatshirts">Sweatshirts</a>
-            <a href="#sweatpants">Sweatpants</a>
-            <a href="#hoodies">Hoodies</a>
+      <!-- Navigation aligned right -->
+      <div class="nav-wrapper">
+        <nav class="main-nav">
+          <div class="dropdown">
+            <button class="dropbtn">All Products ▼</button>
+            <div class="dropdown-content">
+              <a href="#nova">Nova Collection</a>
+              <a href="#tshirts">T-Shirts</a>
+              <a href="#sweatshirts">Sweatshirts</a>
+              <a href="#sweatpants">Sweatpants</a>
+              <a href="#hoodies">Hoodies</a>
+            </div>
           </div>
-        </div>
-        <a href="#favorites" class="favorites">🦋 Favorites</a>
-      </nav>
+          <a href="#favorites" class="favorites">🦋 Favorites</a>
+        </nav>
+      </div>
 
     </div>
   </header>
@@ -70,6 +74,12 @@
 
   <section id="hoodies" class="collection">
     <h2>Hoodies</h2>
+    <div class="products-grid"></div>
+  </section>
+
+  <!-- Favorites Section -->
+  <section id="favorites" class="collection">
+    <h2>Favorites 🦋</h2>
     <div class="products-grid"></div>
   </section>
 
