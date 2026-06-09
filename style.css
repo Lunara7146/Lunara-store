@@ -50,6 +50,17 @@ h3 {
    HEADER
 ========================= */
 
+.header-inner.header-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* two equal columns */
+  align-items: center;
+}
+
+.brand-center {
+  justify-self: center; /* forces brand into center */
+}
+
+
 /* Center Brand Name */
 .brand-center {
   display: flex;
