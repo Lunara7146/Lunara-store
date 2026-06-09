@@ -832,3 +832,31 @@ body.cart-open .overlay {
   from {opacity: 0;}
   to {opacity: 1;}
 }
+
+/* Popup Boxes */
+.popup-box {
+  display: none;
+  position: fixed;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111;
+  color: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(255, 0, 200, 0.8); /* glowing edge */
+  z-index: 2000;
+  max-width: 400px;
+  text-align: center;
+}
+
+/* Active state when targeted */
+.popup-box:target {
+  display: block;
+}
+
+/* Heading style */
+.popup-box h3 {
+  margin-top: 0;
+  color: #ff66ff;
+}
