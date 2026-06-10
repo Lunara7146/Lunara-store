@@ -626,13 +626,15 @@ body.cart-open .overlay {
   transition: color 0.3s ease;
 }
 .footer-dropdown-content {
+/* Scrollable + Fade-in for Footer Modals */
+.footer-dropdown-content {
   display: block;
   position: absolute;
   bottom: 40px;
   background: var(--panel-2);
   min-width: 280px;
   max-width: 90%;
-  max-height: 300px; /* scrollable */
+  max-height: 300px; /* ensures scrollable */
   overflow-y: auto;
   box-shadow: 0px 6px 12px rgba(0,0,0,0.4);
   border-radius: 10px;
@@ -649,17 +651,6 @@ body.cart-open .overlay {
   color: var(--accent);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .footer-contacts {
-    flex-direction: column;
-    gap: 12px;
-  }
-  .footer-trust {
-    flex-direction: column;
-    gap: 12px;
-  }
-}
 
 /* =========================
    MOBILE
