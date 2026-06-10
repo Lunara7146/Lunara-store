@@ -47,6 +47,53 @@ h3 {
 }
 
 /* =========================
+   RESPONSIVE DROPDOWN BOXES
+========================= */
+
+/* Base (desktop/laptop) */
+.footer-dropdown-content {
+  position: absolute;
+  bottom: 50px;              /* sits just above footer divider */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;                /* wide for desktop */
+  max-width: 720px;          /* cap width */
+  max-height: 260px;         /* shorter so it doesn’t overlap products */
+  overflow-y: auto;          /* scroll if text is longer */
+  background: var(--panel-2);
+  border: 1px solid #7ee7ff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0px 6px 12px rgba(0,0,0,0.4);
+  z-index: 1000;
+  display: none;             /* hidden by default */
+}
+.footer-dropdown-content.show {
+  display: block;            /* toggled open */
+}
+
+/* Tablet (up to 1024px) */
+@media (max-width: 1024px) {
+  .footer-dropdown-content {
+    width: 95%;
+    max-width: 600px;
+    max-height: 220px;
+    font-size: 14px;
+  }
+}
+
+/* Mobile (up to 768px) */
+@media (max-width: 768px) {
+  .footer-dropdown-content {
+    width: 96%;              /* nearly full width */
+    max-width: none;          /* remove desktop cap */
+    max-height: 200px;        /* shorter box for phones */
+    font-size: 13px;
+    bottom: 40px;             /* sits neatly above footer line */
+  }
+}
+
+/* =========================
    HEADER
 ========================= */
 
